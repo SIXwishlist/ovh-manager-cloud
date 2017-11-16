@@ -17,7 +17,7 @@
                 <ul class="cui-tile__body cui-tile__body_list">
                     <li class="cui-tile__item" data-ng-repeat="graph in MetricsDashboardCtrl.graphs">
                         <a class="oui-button oui-button_link oui-button_icon-right oui-button_full-width cui-tile__button cui-tile__button_link"
-                            type="button" 
+                            type="button"
                             href="{{graph.url}}"
                             target="_blank">
                             <span class="text-link" data-ng-bind="graph.name"></span>
@@ -36,12 +36,12 @@
                             <cui-loader></cui-loader>
                         </div>
                         <div data-ng-hide="MetricsDashboardCtrl.loading.service && MetricsDashboardCtrl.loading.consumption">
-                            <metrics-chart-pie 
-                                            legend="'metrics_mads' | translate "
-                                            text="MetricsDashboardCtrl.usage.conso.mads | formatSi"
-                                            text-small="MetricsDashboardCtrl.displayUsage(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)"
-                                            value="MetricsDashboardCtrl.computeUsage(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)"
-                                            color="MetricsDashboardCtrl.computeColor(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)">
+                            <metrics-chart-pie
+                                legend="'metrics_mads' | translate "
+                                text="MetricsDashboardCtrl.usage.conso.mads | formatSi"
+                                text-small="MetricsDashboardCtrl.displayUsage(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)"
+                                value="MetricsDashboardCtrl.computeUsage(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)"
+                                color="MetricsDashboardCtrl.computeColor(MetricsDashboardCtrl.usage.conso.mads, MetricsDashboardCtrl.usage.quota.mads)">
                             </metrics-chart-pie>
                         </div>
                     </div>
@@ -50,12 +50,12 @@
                             <cui-loader></cui-loader>
                         </div>
                         <div data-ng-hide="MetricsDashboardCtrl.loading.service && MetricsDashboardCtrl.loading.consumption">
-                            <metrics-chart-pie 
-                                            legend="'metrics_ddp' | translate "
-                                            text="MetricsDashboardCtrl.usage.conso.ddp | formatSi"
-                                            text-small="MetricsDashboardCtrl.displayUsage(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)"
-                                            value="MetricsDashboardCtrl.computeUsage(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)"
-                                            color="MetricsDashboardCtrl.computeColor(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)">
+                            <metrics-chart-pie
+                                legend="'metrics_ddp' | translate "
+                                text="MetricsDashboardCtrl.usage.conso.ddp | formatSi"
+                                text-small="MetricsDashboardCtrl.displayUsage(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)"
+                                value="MetricsDashboardCtrl.computeUsage(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)"
+                                color="MetricsDashboardCtrl.computeColor(MetricsDashboardCtrl.usage.conso.ddp, MetricsDashboardCtrl.usage.quota.ddp)">
                             </metrics-chart-pie>
                         </div>
                     </div>
@@ -68,12 +68,10 @@
             <cui-tile data-title="'metrics_tiles_configuration_title' | translate"
                     data-loading="MetricsDashboardCtrl.loading.service"
                     class="h-100">
-                <div class="cui-tile__body">
-                    <cui-tile-item data-actions="MetricsDashboardCtrl.actions.editName">
-                        <cui-tile-definitions>
-                            <cui-tile-definition-term data-term="'metrics_tiles_configuration_name' | translate"></cui-tile-definition-term>
-                            <cui-tile-definition-description data-description="MetricsDashboardCtrl.configuration.description || MetricsDashboardCtrl.configuration.name"></cui-tile-definition-description>
-                        </cui-tile-definitions>
+                <cui-tile-body>
+                    <cui-tile-item data-term="'metrics_tiles_configuration_name' | translate"
+                        data-description="MetricsDashboardCtrl.configuration.description || MetricsDashboardCtrl.configuration.name"
+                        data-actions="MetricsDashboardCtrl.actions.changeName">
                     </cui-tile-item>
                     <cui-tile-item>
                         <cui-tile-definitions>
@@ -96,13 +94,13 @@
                             </cui-tile-definition-description>
                         </cui-tile-definitions>
                     </cui-tile-item>
-
-                </div>
+                </cui-tile-body>
             </cui-tile>
         </div>
         <div class="col-xm-12 col-md-6">
-        <cui-tile-subscription data-loading="MetricsDashboardCtrl.loading.plan"
+            <cui-tile-subscription data-loading="MetricsDashboardCtrl.loading.plan"
                 data-subscription-info="MetricsDashboardCtrl.plan"
+                data-offer-actions="MetricsDashboardCtrl.actions.changeOffer"
                 data-autorenew-actions="MetricsDashboardCtrl.actions.autorenew"
                 data-contact-actions="MetricsDashboardCtrl.actions.contacts"
                 class="h-100"></cui-tile-subscription>

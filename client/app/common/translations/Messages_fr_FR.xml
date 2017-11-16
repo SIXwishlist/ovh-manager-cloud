@@ -506,6 +506,8 @@
    <translation id="common_name_change_modal_service_name_label" qtlid="415714">Nom par défaut</translation>
    <translation id="common_name_change_modal_display_name_label" qtlid="415727">Nom personnalisé</translation>
 
+   <translation id="common_change_offer" qtlid="359761">Modifier l'offre</translation>
+
    <translation id="common_preview_see" qtlid="433371">Voir l'aperçu</translation>
 
    <translation id="common_table_col_action" qtlid="56105">Action</translation>

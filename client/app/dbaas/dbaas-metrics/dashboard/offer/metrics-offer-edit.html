@@ -1,0 +1,39 @@
+<cui-modal>
+    <form id="offerChangeForm">
+        <cui-modal-header data-on-dismiss="$ctrl.cancel()"></cui-modal-header>
+        <cui-modal-body title="'common_change_offer' | translate">
+            <cui-modal-text>
+                Vous pouvez modifier l'offre à tout moment en fonction de vos besoins
+            </cui-modal-text>
+            <div class="oui-field">
+                <label for="offer" class="oui-field__label oui-label">Séries</label>
+                <div class="oui-field__content">
+                    <div class="oui-field-control">
+                        <label class="oui-select">
+                            <select id="offer" name="offer" class="oui-select__input">
+                                <option value="Option 1">100 (Plan XXS)</option>
+                                <option value="Option 2">1K (Plan XS)</option>
+                            </select>
+                            <i class="oui-icon oui-icon-chevron-down" aria-hidden="true"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <dl>
+                <dt class="cui-tile__term">Prix</dt>
+                <dd class="cui-tile__description">60,12 € HT/mois</dd>
+            </dl>
+            <cui-modal-text>
+                <small>
+                    Si vous avez un code promotionnel, vous pourrez l'appliquer à l'étape suivante
+                </small>
+            </cui-modal-text>
+        </cui-modal-body>
+        <cui-modal-footer>
+            <cui-cancel-button data-text="'common_cancel' | translate" data-on-click="$ctrl.cancel()"></cui-cancel-button>
+            <cui-submit-button data-text="'common_edit' | translate" 
+                data-on-click="$ctrl.confirm()"
+                data-disabled="nameChangeForm.$invalid || $ctrl.isModalLoading()"></cui-submit-button>
+        </cui-modal-footer>
+    </form>
+</cui-modal>
