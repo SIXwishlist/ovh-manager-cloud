@@ -1,13 +1,17 @@
 class MetricOfferEditController {
-    constructor ($uibModalInstance, ControllerHelper, currentOffer, serviceName) {
+    constructor ($uibModalInstance, ControllerHelper, currentOffer, MetricsOfferService, serviceName) {
         this.$uibModalInstance = $uibModalInstance;
         this.ControllerHelper = ControllerHelper;
-
-        this.serviceName = serviceName;
         this.currentOffer = currentOffer;
+        this.MetricsOfferService = MetricsOfferService;
+        this.serviceName = serviceName;
     }
 
     $onInit () {
+        this._initLoaders();
+        this.offerUpgradeOptions.load()
+            .catch(response => this.cancel(response));
+
         this.model = {
             offer: {
                 value: this.currentOffer,
@@ -24,6 +28,12 @@ class MetricOfferEditController {
 
     cancel () {
         this.$uibModalInstance.dismiss();
+    }
+
+    _initLoaders () {
+        this.offerUpgradeOptions = this.ControllerHelper.request.getArrayLoader({
+            loaderFunction: () => this.MetricsOfferService.getOfferUpgradeOptions(this.serviceName)
+        });
     }
 }
 
