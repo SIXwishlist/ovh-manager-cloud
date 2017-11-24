@@ -34,6 +34,10 @@ class MetricOfferEditController {
         }
         this.saving = true;
 
+        this.MetricsOfferService.upgradeMetricsPlan(this.serviceName, {
+            planCode: this.model.planCode.value
+        });
+
         return this.$uibModalInstance.close();
     }
 
