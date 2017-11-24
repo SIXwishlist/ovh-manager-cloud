@@ -76,6 +76,7 @@
                 })
                 .then(service => {
                     this.plan.offer = service.data.offer;
+                    this.plan.retentionOffer = service.data.retentionOffer;
                 })
                 .finally(() => {
                     this.loading.plan = false;
@@ -126,7 +127,7 @@
                 },
                 changeOffer: {
                     text: this.$translate.instant("common_edit"),
-                    callback: () => this.MetricActionService.openOfferEditModal(this.serviceName, this.plan.offer),
+                    callback: () => this.MetricActionService.openOfferEditModal(this.serviceName, this.plan.offer, this.plan.retentionOffer),
                     isAvailable: () => {
                         return !this.offerUpgradeOptions.loading && !this.offerUpgradeOptions.hasErrors && this.offerUpgradeOptions.data.length > 0;
                     }

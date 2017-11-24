@@ -1,5 +1,4 @@
 <cui-modal>
-    <pre><code>{{ $ctrl.model | json }}</code></pre>
     <form novalidate name="$ctrl.form">
         <cui-modal-header data-on-dismiss="$ctrl.cancel()"></cui-modal-header>
         <cui-modal-body title="'common_change_offer' | translate">
@@ -19,8 +18,8 @@
                                     data-ng-class="{ 'oui-input_error': $ctrl.form.$submitted && $ctrl.form.planCode.$invalid }"
                                     data-ng-model="$ctrl.model.planCode.value"
                                     data-ng-options="plan.planCode as plan.planCode for plan in $ctrl.plans.data | orderBy: 'planCodeWeight'"
-                                    data-ng-change="$ctrl.model.retentionPlanCode.value = undefined"
-                                    data-ng-required="$ctrl.model.planCode.required">
+                                    data-ng-required="$ctrl.model.planCode.required"
+                                    data-ng-change="$ctrl.changePlanCode()">
                                     <option value="">Sélectionner</option>
                                 </select>
                                 <i class="oui-icon oui-icon-chevron-down" aria-hidden="true"></i>
@@ -39,8 +38,9 @@
                                     data-ng-class="{ 'oui-input_error': $ctrl.form.$submitted && $ctrl.form.retentionPlanCode.$invalid }"
                                     data-ng-model="$ctrl.model.retentionPlanCode.value"
                                     data-ng-options="plan.planCode as plan.planCode for plan in $ctrl.retentionPlans.data | orderBy: 'planCodeWeight'"
-                                    data-ng-disabled="!$ctrl.model.planCode.value"
-                                    data-ng-required="$ctrl.model.retentionPlanCode.required">
+                                    data-ng-disabled="!$ctrl.model.planCode.value || !$ctrl.canChangeRetention()"
+                                    data-ng-required="$ctrl.model.retentionPlanCode.required"
+                                    data-ng-change="$ctrl.updateTotal()">
                                     <option value="">Sélectionner</option>
                                 </select>
                                 <i class="oui-icon oui-icon-chevron-down" aria-hidden="true"></i>

@@ -12,7 +12,11 @@ class MetricService {
             .get({
                 serviceName
             }).$promise
-            .then(response => this.acceptResponse(response))
+            .then(response => {
+                const retentienPlanCode = `${response.offer}-${response.quota.retention / 12}y`;
+                response.retentionOffer = retentienPlanCode;
+                return this.acceptResponse(response);
+            })
             .catch(response => this.rejectResponse(response.data, this.$translate.instant("metrics_err_service")));
     }
 

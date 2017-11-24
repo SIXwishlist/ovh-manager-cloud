@@ -1,17 +1,12 @@
 class MetricOfferEditController {
-    constructor ($q, $uibModalInstance, ControllerHelper, currentOffer, MetricsOfferService, serviceName) {
+    constructor ($q, $uibModalInstance, ControllerHelper, currentPlan, currentRetentionPlan, MetricsOfferService, serviceName) {
         this.$q = $q;
         this.$uibModalInstance = $uibModalInstance;
         this.ControllerHelper = ControllerHelper;
-        this.currentOffer = currentOffer;
+        this.currentPlan = currentPlan;
+        this.currentRetentionPlan = currentRetentionPlan;
         this.MetricsOfferService = MetricsOfferService;
         this.serviceName = serviceName;
-    }
-
-    $onInit () {
-        this._initLoaders();
-        this.plans.load().catch(response => this.cancel(response));
-        this.retentionPlans.load().catch(response => this.cancel(response));
 
         this.model = {
             planCode: {
@@ -25,12 +20,18 @@ class MetricOfferEditController {
         };
     }
 
+    $onInit () {
+        this._initLoaders();
+        this.plans.load()
+            .catch(response => this.cancel(response));
+        this.retentionPlans.load()
+            .catch(response => this.cancel(response));
+    }
+
     confirm () {
         if (this.form.$invalid) {
             return this.$q.reject();
         }
-
-
         this.saving = true;
 
         return this.$uibModalInstance.close();
@@ -38,6 +39,22 @@ class MetricOfferEditController {
 
     cancel () {
         this.$uibModalInstance.dismiss();
+    }
+
+    changePlanCode () {
+        if (this.model.planCode.value && this.retentionPlans.data.length === 1) {
+            this.model.retentionPlanCode.value = this.retentionPlans.data[0].planCode;
+        } else {
+            this.model.retentionPlanCode.value = undefined;
+        }
+    }
+
+    updateTotal () {
+        console.log("update total is missing");
+    }
+
+    canChangeRetention () {
+        return this.retentionPlans.data.length > 1; // If only 1 plan is available it is the current plan.
     }
 
     isModalLoading () {

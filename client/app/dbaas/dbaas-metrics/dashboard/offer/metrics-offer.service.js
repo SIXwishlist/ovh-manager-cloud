@@ -65,15 +65,33 @@ class StringWeightAggregate {
 }
 
 class MetricsOfferService {
-    constructor ($q, OvhApiOrderCart, OvhApiMetricsOrder, ServiceHelper) {
+    constructor ($q, OvhApiOrderCart, OvhApiMetrics, OvhApiMetricsOrder, ServiceHelper) {
         this.$q = $q;
         this.OvhApiOrderCart = OvhApiOrderCart;
+        this.OvhApiMetrics = OvhApiMetrics;
         this.OvhApiMetricsOrder = OvhApiMetricsOrder;
         this.ServiceHelper = ServiceHelper;
     }
 
     getOfferUpgradeOptions (serviceName) {
-        const promises = {
+        return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
+            .$promise
+            .then(plans => {
+                // API should do this.                
+                plans = _.filter(plans, plan => plan.planCode !== "metrics-free-trial");
+                const stringWeight = new StringWeightAggregate();
+                stringWeight.push(new StringWeightShirtSize());
+                //  stringWeight.push(new StringWeightDuration());
+
+                _.forEach(plans, plan => {
+                    plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
+                });
+                return plans;
+            })
+            .catch(this.ServiceHelper.errorHandler("some error message"));
+
+        // Waiting on API to be completed.  Hard to predict what it will look like atm.
+        /*  const promises = {
             plans: this._getMetricsPlanCodes(),
             upgradeOptions: this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName }).$promise
         };
@@ -91,22 +109,64 @@ class MetricsOfferService {
                     return plan;
                 });
             })
-            .catch(this.ServiceHelper.errorHandler("some error message"));
+            .catch(this.ServiceHelper.errorHandler("some error message"));*/
     }
 
     getRetentionUpgradeOptions (serviceName) {
-        return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
+        return this.OvhApiMetrics.Lexi().get({ serviceName })
+            .$promise
+            .then(metrics => {
+                const retentienPlanCode = `${metrics.offer}-${metrics.quota.retention / 12}y`;
+                return [{
+                    productType: "delivery",
+                    productName: retentienPlanCode,
+                    planCode: retentienPlanCode,
+                    prices: [
+                        {
+                            priceInUcents: 499000000,
+                            capacities: [
+                                "renew"
+                            ],
+                            pricingMode: "default",
+                            duration: "P1M",
+                            interval: 1,
+                            description: "Metrics Cloud Plan - xs (1kseries)",
+                            minimumRepeat: 1,
+                            pricingType: "rental",
+                            maximumQuantity: 1,
+                            maximumRepeat: null,
+                            minimumQuantity: 1,
+                            price: {
+                                currencyCode: "EUR",
+                                value: 0,
+                                text: "0 €"
+                            }
+                        }
+                    ]
+                }];
+            })
+            .catch(this.ServiceHelper.errorHandler("some error message"));
+        
+        // Waiting on API to be completed.  Hard to predict what it will look like atm.
+        /*  return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
             .$promise
             .then(plans => {
                 const stringWeight = new StringWeightAggregate();
                 stringWeight.push(new StringWeightShirtSize());
-                stringWeight.push(new StringWeightDuration());
+                //stringWeight.push(new StringWeightDuration());
 
                 _.forEach(plans, plan => {
                     plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
                 });
                 return plans;
             })
+            .catch(this.ServiceHelper.errorHandler("some error message"));*/
+    }
+
+    upgradeMetricsPlan (serviceName, plan) {
+        return this.OvhApiMetricsOrder.Upgrade().post({ serviceName }, { plan: plan.planCode })
+            .$promise()
+            .then(this.ServiceHelper.successHandler("some success message"))
             .catch(this.ServiceHelper.errorHandler("some error message"));
     }
 

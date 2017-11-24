@@ -3,7 +3,7 @@ class MetricActionService {
         this.ControllerHelper = ControllerHelper;
     }
 
-    openOfferEditModal (serviceName, currentOffer) {
+    openOfferEditModal (serviceName, currentPlan, currentRetentionPlan) {
         this.ControllerHelper.modal.showModal({
             modalConfig: {
                 templateUrl: "app/dbaas/dbaas-metrics/dashboard/offer/metrics-offer-edit.html",
@@ -11,7 +11,8 @@ class MetricActionService {
                 controllerAs: "$ctrl",
                 resolve: {
                     serviceName: () => serviceName,
-                    currentOffer: () => currentOffer
+                    currentPlan: () => currentPlan,
+                    currentRetentionPlan: () => currentRetentionPlan
                 }
             }
         });
