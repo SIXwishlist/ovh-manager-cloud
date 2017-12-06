@@ -12,19 +12,15 @@ class MetricOfferEditController {
             planCode: {
                 value: undefined,
                 required: true
-            },
-            retentionPlanCode: {
-                value: undefined,
-                required: true
             }
         };
+
+        this.totalPrice = null;
     }
 
     $onInit () {
         this._initLoaders();
         this.plans.load()
-            .catch(response => this.cancel(response));
-        this.retentionPlans.load()
             .catch(response => this.cancel(response));
     }
 
@@ -34,44 +30,35 @@ class MetricOfferEditController {
         }
         this.saving = true;
 
-        this.MetricsOfferService.upgradeMetricsPlan(this.serviceName, {
+        return this.MetricsOfferService.upgradeMetricsPlan(this.serviceName, {
             planCode: this.model.planCode.value
-        });
-
-        return this.$uibModalInstance.close();
+        })
+            .then(() => {
+                this.$uibModalInstance.close();
+            })
+            .catch(() => {
+                this.cancel();
+            });
     }
 
     cancel () {
         this.$uibModalInstance.dismiss();
     }
 
-    changePlanCode () {
-        if (this.model.planCode.value && this.retentionPlans.data.length === 1) {
-            this.model.retentionPlanCode.value = this.retentionPlans.data[0].planCode;
-        } else {
-            this.model.retentionPlanCode.value = undefined;
+    updateTotal () {
+        const chosenPlan = _.find(this.plans.data, plan => this.model.planCode.value === plan.planCode);
+        if (chosenPlan) {
+            this.totalPrice = chosenPlan.totalPrice;
         }
     }
 
-    updateTotal () {
-        console.log("update total is missing");
-    }
-
-    canChangeRetention () {
-        return this.retentionPlans.data.length > 1; // If only 1 plan is available it is the current plan.
-    }
-
     isModalLoading () {
-        return this.plans.loading;
+        return this.plans.loading || this.saving;
     }
 
     _initLoaders () {
         this.plans = this.ControllerHelper.request.getArrayLoader({
             loaderFunction: () => this.MetricsOfferService.getOfferUpgradeOptions(this.serviceName)
-        });
-
-        this.retentionPlans = this.ControllerHelper.request.getArrayLoader({
-            loaderFunction: () => this.MetricsOfferService.getRetentionUpgradeOptions(this.serviceName)
         });
     }
 }

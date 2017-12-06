@@ -52,7 +52,7 @@ class StringWeightAggregate {
         this.stringWeights.push(stringWeight);
     }
 
-    // Evaluate weight aggration.  Each children aggregate should return a score of 1000 or below.  
+    // Evaluate weight aggration.  Each children aggregate should return a score of 1000 or below.
     // Childs are evaluated in order.  In other words, first child weight more than the last by default.
     evaluate (string) {
         let totalWeight = 0;
@@ -65,10 +65,8 @@ class StringWeightAggregate {
 }
 
 class MetricsOfferService {
-    constructor ($q, OvhApiOrderCart, OvhApiMetrics, OvhApiMetricsOrder, ServiceHelper) {
+    constructor ($q, OvhApiMetricsOrder, ServiceHelper) {
         this.$q = $q;
-        this.OvhApiOrderCart = OvhApiOrderCart;
-        this.OvhApiMetrics = OvhApiMetrics;
         this.OvhApiMetricsOrder = OvhApiMetricsOrder;
         this.ServiceHelper = ServiceHelper;
     }
@@ -77,106 +75,28 @@ class MetricsOfferService {
         return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
             .$promise
             .then(plans => {
-                // API should do this.                
                 plans = _.filter(plans, plan => plan.planCode !== "metrics-free-trial");
                 const stringWeight = new StringWeightAggregate();
                 stringWeight.push(new StringWeightShirtSize());
-                //  stringWeight.push(new StringWeightDuration());
+                // stringWeight.push(new StringWeightDuration());
 
                 _.forEach(plans, plan => {
                     plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
+                    plan.totalPrice = _.sum(plan.prices, "priceInUcents");
                 });
                 return plans;
             })
-            .catch(this.ServiceHelper.errorHandler("some error message"));
-
-        // Waiting on API to be completed.  Hard to predict what it will look like atm.
-        /*  const promises = {
-            plans: this._getMetricsPlanCodes(),
-            upgradeOptions: this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName }).$promise
-        };
-
-        return this.$q.all(promises)
-            .then(response => {
-                const extractPlanCode = new RegExp(/^(.+)-[0-9]+y/);
-                const upgradablePlanCodes = _.uniq(_.map(response.upgradeOptions, upgradeOption => {
-                    return extractPlanCode.exec(upgradeOption.planCode)[1];
-                }));
-
-                const stringWeight = new StringWeightShirtSize();
-                return _.map(_.filter(response.plans, plan => _.includes(upgradablePlanCodes, plan.planCode)), plan => {
-                    plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
-                    return plan;
-                });
-            })
-            .catch(this.ServiceHelper.errorHandler("some error message"));*/
-    }
-
-    getRetentionUpgradeOptions (serviceName) {
-        return this.OvhApiMetrics.Lexi().get({ serviceName })
-            .$promise
-            .then(metrics => {
-                const retentienPlanCode = `${metrics.offer}-${metrics.quota.retention / 12}y`;
-                return [{
-                    productType: "delivery",
-                    productName: retentienPlanCode,
-                    planCode: retentienPlanCode,
-                    prices: [
-                        {
-                            priceInUcents: 499000000,
-                            capacities: [
-                                "renew"
-                            ],
-                            pricingMode: "default",
-                            duration: "P1M",
-                            interval: 1,
-                            description: "Metrics Cloud Plan - xs (1kseries)",
-                            minimumRepeat: 1,
-                            pricingType: "rental",
-                            maximumQuantity: 1,
-                            maximumRepeat: null,
-                            minimumQuantity: 1,
-                            price: {
-                                currencyCode: "EUR",
-                                value: 0,
-                                text: "0 €"
-                            }
-                        }
-                    ]
-                }];
-            })
-            .catch(this.ServiceHelper.errorHandler("some error message"));
-        
-        // Waiting on API to be completed.  Hard to predict what it will look like atm.
-        /*  return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
-            .$promise
-            .then(plans => {
-                const stringWeight = new StringWeightAggregate();
-                stringWeight.push(new StringWeightShirtSize());
-                //stringWeight.push(new StringWeightDuration());
-
-                _.forEach(plans, plan => {
-                    plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
-                });
-                return plans;
-            })
-            .catch(this.ServiceHelper.errorHandler("some error message"));*/
+            .catch(this.ServiceHelper.errorHandler());
     }
 
     upgradeMetricsPlan (serviceName, plan) {
-        return this.OvhApiMetricsOrder.Upgrade().post({ serviceName }, { plan: plan.planCode })
-            .$promise()
-            .then(this.ServiceHelper.successHandler("some success message"))
-            .catch(this.ServiceHelper.errorHandler("some error message"));
-    }
-
-    _getMetricsPlanCodes () {
-        let cartId = "";
-        return this.OvhApiOrderCart.Lexi().post({}, { ovhSubsidiary: "FR" })
+        return this.OvhApiMetricsOrder.Upgrade().Lexi().post({
+            serviceName,
+            planCode: plan.planCode
+        })
             .$promise
-            .then(cart => this.OvhApiOrderCart.Lexi().assign({ cartId: cart.cartId }).$promise.then(() => { cartId = cart.cartId; }))
-            .then(() => this.OvhApiOrderCart.Product().Lexi().get({ cartId }, { productId: "metrics" }).$promise)
-            .then(plans => this.OvhApiOrderCart.Lexi().delete({ cartId }).$promise.then(() => plans));
+            .then(this.ServiceHelper.orderSuccessHandler())
+            .catch(this.ServiceHelper.orderErrorHandler());
     }
 }
 

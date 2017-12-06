@@ -1,67 +1,46 @@
 <cui-modal>
     <form novalidate name="$ctrl.form">
         <cui-modal-header data-on-dismiss="$ctrl.cancel()"></cui-modal-header>
-        <cui-modal-body title="'common_change_offer' | translate">
+        <cui-modal-body data-title="'common_change_offer' | translate">
             <cui-modal-text>
-                Vous pouvez modifier l'offre à tout moment en fonction de vos besoins
+                <span data-translate="metrics_offer_edit_anytime"></span>
             </cui-modal-text>
             <cui-loader data-ng-if="$ctrl.isModalLoading()"></cui-loader>
             <div data-ng-if="!$ctrl.isModalLoading()">
                 <div class="oui-field">
-                    <label for="planCode" class="oui-field__label oui-label">Séries</label>
+                    <label for="planCode"
+                           class="oui-field__label oui-label"
+                           data-translate="metrics_offer_edit_series"></label>
                     <div class="oui-field__content">
                         <div class="oui-field-control">
                             <label class="oui-select">
-                                <select id="planCode" 
-                                    name="planCode" 
+                                <select id="planCode"
+                                    name="planCode"
                                     class="oui-select__input"
                                     data-ng-class="{ 'oui-input_error': $ctrl.form.$submitted && $ctrl.form.planCode.$invalid }"
                                     data-ng-model="$ctrl.model.planCode.value"
                                     data-ng-options="plan.planCode as plan.planCode for plan in $ctrl.plans.data | orderBy: 'planCodeWeight'"
                                     data-ng-required="$ctrl.model.planCode.required"
-                                    data-ng-change="$ctrl.changePlanCode()">
-                                    <option value="">Sélectionner</option>
-                                </select>
-                                <i class="oui-icon oui-icon-chevron-down" aria-hidden="true"></i>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="oui-field">
-                    <label for="retentionPlanCode" class="oui-field__label oui-label">Rétention</label>
-                    <div class="oui-field__content">
-                        <div class="oui-field-control">
-                            <label class="oui-select">
-                                <select id="retentionPlanCode" 
-                                    name="retentionPlanCode" 
-                                    class="oui-select__input"
-                                    data-ng-class="{ 'oui-input_error': $ctrl.form.$submitted && $ctrl.form.retentionPlanCode.$invalid }"
-                                    data-ng-model="$ctrl.model.retentionPlanCode.value"
-                                    data-ng-options="plan.planCode as plan.planCode for plan in $ctrl.retentionPlans.data | orderBy: 'planCodeWeight'"
-                                    data-ng-disabled="!$ctrl.model.planCode.value || !$ctrl.canChangeRetention()"
-                                    data-ng-required="$ctrl.model.retentionPlanCode.required"
                                     data-ng-change="$ctrl.updateTotal()">
-                                    <option value="">Sélectionner</option>
+                                    <option value="">{{:: "common_select" | translate }}</option>
                                 </select>
                                 <i class="oui-icon oui-icon-chevron-down" aria-hidden="true"></i>
                             </label>
                         </div>
                     </div>
                 </div>
-                <dl>
-                    <dt class="cui-tile__term">Prix</dt>
-                    <dd class="cui-tile__description">60,12 € HT/mois</dd>
+                <dl data-ng-if="$ctrl.model.planCode.value">
+                    <dt class="cui-tile__term" data-translate="metrics_offer_edit_price_no_tax"></dt>
+                    <dd class="cui-tile__description">{{ $ctrl.totalPrice | ucentsToCurrency }}</dd>
                 </dl>
                 <cui-modal-text>
-                    <small>
-                        Si vous avez un code promotionnel, vous pourrez l'appliquer à l'étape suivante
-                    </small>
+                    <small data-translate="metrics_offer_edit_promo_code"></small>
                 </cui-modal-text>
             </div>
         </cui-modal-body>
         <cui-modal-footer>
             <cui-cancel-button data-text="'common_cancel' | translate" data-on-click="$ctrl.cancel()"></cui-cancel-button>
-            <cui-submit-button data-text="'common_edit' | translate" 
+            <cui-submit-button data-text="'common_edit' | translate"
                 data-on-click="$ctrl.confirm()"
                 data-disabled="$ctrl.isModalLoading()"></cui-submit-button>
         </cui-modal-footer>

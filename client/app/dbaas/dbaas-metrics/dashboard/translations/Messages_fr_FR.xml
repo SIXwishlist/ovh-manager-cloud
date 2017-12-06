@@ -30,6 +30,11 @@
    <translation id="metrics_tiles_subscription_metrics-live-1t" qtlid="415688">Abonnement Live 1 To</translation>
    <translation id="metrics_tiles_subscription_metrics-live-2t" qtlid="415701">Abonnement Live 2 To</translation>
 
+   <translation id="metrics_offer_edit_anytime">Vous pouvez modifier l'offre à tout moment en fonction de vos besoins</translation>
+   <translation id="metrics_offer_edit_series">Séries</translation>
+   <translation id="metrics_offer_edit_retention">Rétention</translation>
+   <translation id="metrics_offer_edit_price_no_tax">Prix (HT)</translation>
+   <translation id="metrics_offer_edit_promo_code">Si vous avez un code promotionnel, vous pourrez l'appliquer à l'étape suivante</translation>
    <translation id="metrics_tiles_modify" qtlid="37875">Modifier</translation>
    <translation id="metrics_dashboard_modif_cancel" qtlid="37863">Annuler</translation>
    <translation id="metrics_dashboard_modif_confirm" qtlid="37875">Modifier</translation>
