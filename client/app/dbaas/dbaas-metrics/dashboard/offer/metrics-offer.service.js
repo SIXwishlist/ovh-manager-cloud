@@ -58,7 +58,7 @@ class StringWeightAggregate {
         let totalWeight = 0;
         for (let i = 0; i < this.stringWeights.length; i++) {
             const weight = this.stringWeights[i].evaluate(string);
-            totalWeight += weight * 10 ** (3 * (this.stringWeights.length - i));
+            totalWeight += Math.pow(weight * 10, 3 * (this.stringWeights.length - i));
         }
         return totalWeight;
     }
