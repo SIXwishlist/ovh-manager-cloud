@@ -8,7 +8,7 @@
   "dependencies": {
     "jquery": "2.1.x",
     "angular": "1.6.x",
-    "ovh-ui-angular": "^2.0.0",
+    "ovh-ui-angular": "https://github.com/ovh-ux/ovh-ui-angular.git#master",
     "angular-animate": "1.6.x",
     "angular-aria": "^1.6.x",
     "angular-bootstrap": "1.3.x",
