@@ -65,30 +65,33 @@ class StringWeightAggregate {
 }
 
 class MetricsOfferService {
-    constructor ($q, $translate, $window, OvhApiMetricsOrder, ServiceHelper) {
+    constructor ($q, $translate, $window, OvhApiMetrics, OvhApiMetricsOrder, ServiceHelper) {
         this.$q = $q;
         this.$translate = $translate;
         this.$window = $window;
+        this.OvhApiMetrics = OvhApiMetrics;
         this.OvhApiMetricsOrder = OvhApiMetricsOrder;
         this.ServiceHelper = ServiceHelper;
     }
 
     getOfferUpgradeOptions (serviceName) {
-        return this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName })
-            .$promise
-            .then(plans => {
-                plans = _.filter(plans, plan => plan.planCode !== "metrics-free-trial");
-                const stringWeight = new StringWeightAggregate();
-                stringWeight.push(new StringWeightShirtSize());
-                // stringWeight.push(new StringWeightDuration());
+        return this.$q.all({
+            metricInfo: this.OvhApiMetrics.Lexi().get({ serviceName }).$promise,
+            plans: this.OvhApiMetricsOrder.Upgrade().Lexi().query({ serviceName }).$promise
+        })
+            .then(upgradeInfo => {
+                const stringWeight = new StringWeightShirtSize();
+                upgradeInfo.plans = _.filter(upgradeInfo.plans, plan => plan.planCode !== "metrics-free-trial" &&
+                    stringWeight.evaluate(plan.planCode) > stringWeight.evaluate(upgradeInfo.metricInfo.offer));
 
-                _.forEach(plans, plan => {
+                _.forEach(upgradeInfo.plans, plan => {
                     plan.planCodeWeight = stringWeight.evaluate(plan.planCode);
                     plan.totalPrice = _.sum(plan.prices, "priceInUcents");
                 });
-                return plans;
+
+                return upgradeInfo.plans;
             })
-            .catch(this.ServiceHelper.errorHandler());
+            .catch(this.ServiceHelper.errorHandler("Some error lol"));
     }
 
     upgradeMetricsPlan (serviceName, plan) {
