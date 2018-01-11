@@ -65,8 +65,10 @@ class StringWeightAggregate {
 }
 
 class MetricsOfferService {
-    constructor ($q, OvhApiMetricsOrder, ServiceHelper) {
+    constructor ($q, $translate, $window, OvhApiMetricsOrder, ServiceHelper) {
         this.$q = $q;
+        this.$translate = $translate;
+        this.$window = $window;
         this.OvhApiMetricsOrder = OvhApiMetricsOrder;
         this.ServiceHelper = ServiceHelper;
     }
@@ -90,13 +92,15 @@ class MetricsOfferService {
     }
 
     upgradeMetricsPlan (serviceName, plan) {
+        let newWindow = this.$window.open("", "_blank");
+        newWindow.document.write(this.$translate.instant("common_order_doing"));
         return this.OvhApiMetricsOrder.Upgrade().Lexi().post({
             serviceName,
             planCode: plan.planCode
         })
             .$promise
-            .then(this.ServiceHelper.orderSuccessHandler())
-            .catch(this.ServiceHelper.orderErrorHandler());
+            .then(this.ServiceHelper.orderSuccessHandler(newWindow))
+            .catch(this.ServiceHelper.orderErrorHandler(newWindow));
     }
 }
 

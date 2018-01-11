@@ -38,10 +38,12 @@
             };
         }
 
-        orderSuccessHandler () {
+        orderSuccessHandler (newWindow) {
             return data => {
                 // FIXME: not working see: https://stackoverflow.com/questions/11821009/javascript-window-open-not-working
-                this.$window.open(data.order.url, "_blank");
+                // this.$window.open(data.order.url, "_blank");
+                newWindow.location = data.order.url;
+                console.log(data);
 
                 this.CloudMessage.success({
                     textHtml: this.$translate.instant(defaultOrderSuccessMessage, {
@@ -52,8 +54,11 @@
             };
         }
 
-        orderErrorHandler () {
-            return err => this.errorHandler(defaultOrderErrorMessage)(err);
+        orderErrorHandler (newWindow) {
+            return err => {
+                newWindow.close();
+                this.errorHandler(defaultOrderErrorMessage)(err);
+            };
         }
     }
 
