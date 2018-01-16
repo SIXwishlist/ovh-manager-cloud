@@ -1,7 +1,8 @@
 class CloudProjectComputeLoadbalancerCtrl {
-    constructor ($q, $translate, $stateParams, CloudProjectComputeLoadbalancerService, OvhApiCloudProjectIplb, OvhApiIpLoadBalancing, CloudMessage, OvhApiMe, URLS) {
+    constructor ($q, $translate, $state, $stateParams, CloudProjectComputeLoadbalancerService, OvhApiCloudProjectIplb, OvhApiIpLoadBalancing, CloudMessage, OvhApiMe, URLS) {
         this.$q = $q;
         this.$translate = $translate;
+        this.$state = $state;
         this.CloudProjectComputeLoadbalancerService = CloudProjectComputeLoadbalancerService;
         this.OvhApiCloudProjectIplb = OvhApiCloudProjectIplb;
         this.OvhApiIpLoadBalancing = OvhApiIpLoadBalancing;
@@ -33,6 +34,18 @@ class CloudProjectComputeLoadbalancerCtrl {
         this.getLoadbalancers(true);
     }
 
+    goToLoadbalancerConfigure (serviceName) {
+        this.$state.go("iaas.pci-project.compute.loadbalancerConfigure", {
+            loadbalancerId: serviceName
+        });
+    }
+
+    goToIPLB (serviceName) {
+        this.$state.go("network.iplb.detail.home", {
+            serviceName
+        });
+    }
+
     getLoadbalancers (clearCache) {
         if (!this.loaders.table.loadbalancer) {
             this.loaders.table.loadbalancer = true;
@@ -42,25 +55,24 @@ class CloudProjectComputeLoadbalancerCtrl {
             }
             this.$q.all({
                 loadbalancers:
-                this.OvhApiIpLoadBalancing.Lexi().query().$promise.then(response => this.$q.all(
-                    _.map(response, id => this.CloudProjectComputeLoadbalancerService.getLoadbalancer(id))
-                )),
-                laodbalancersImportedArray:
-                this.OvhApiCloudProjectIplb.Lexi().query({
-                    serviceName: this.serviceName
-                }).$promise.then(ids => this.$q.all(
-                    _.map(ids, id =>
-                        this.OvhApiCloudProjectIplb.Lexi().get({
-                            serviceName: this.serviceName,
-                            id
-                        }).$promise
-                    )
-                )
-                )
-            }).then(({ loadbalancers, laodbalancersImportedArray }) => {
+                    this.OvhApiIpLoadBalancing.Lexi().query().$promise.then(response => this.$q.all(
+                        _.map(response, id => this.CloudProjectComputeLoadbalancerService.getLoadbalancer(id))
+                    )),
+                loadbalancersImportedArray:
+                    this.OvhApiCloudProjectIplb.Lexi().query({
+                        serviceName: this.serviceName
+                    }).$promise.then(ids => this.$q.all(
+                        _.map(ids, id =>
+                            this.OvhApiCloudProjectIplb.Lexi().get({
+                                serviceName: this.serviceName,
+                                id
+                            }).$promise
+                        )
+                    ))
+            }).then(({ loadbalancers, loadbalancersImportedArray }) => {
             // Create a map of imported loadbalancers
                 const loadBalancerImported = {};
-                _.forEach(laodbalancersImportedArray, lb => { loadBalancerImported[lb.iplb] = lb; });
+                _.forEach(loadbalancersImportedArray, lb => { loadBalancerImported[lb.iplb] = lb; });
 
                 // Set openstack importation status
                 this.table.loadbalancer = _.map(loadbalancers, lb => {
