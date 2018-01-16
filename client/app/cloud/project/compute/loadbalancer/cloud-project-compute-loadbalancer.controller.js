@@ -90,3 +90,5 @@ class CloudProjectComputeLoadbalancerCtrl {
         }
     }
 }
+
+angular.module("managerApp").controller("CloudProjectComputeLoadbalancerCtrl", CloudProjectComputeLoadbalancerCtrl);
