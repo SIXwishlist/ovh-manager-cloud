@@ -15,11 +15,10 @@
                 </button>
                 <ul class="dropdown-menu mt-0" role="menu">
                     <li role="menuitem">
-                        <button type="button" class="btn fs14"
-                                at-internet-click="{ name : 'cloud-project::cloud-project-compute::cloud-project-compute-infrastructure-add-virtual-machine' }"
-                                data-ng-bind=":: 'cpci_add_server' | translate"
-                                data-ng-click="ComputeInfrastructureListCtrl.InfrastructureService.addVirtualMachine()">
-                        </button>
+                        <a class="btn fs14 text-left" ui-sref="iaas.pci-project.compute.infrastructure.vm-add()"
+                           at-internet-click="{ name : 'cloud-project::cloud-project-compute::cloud-project-compute-infrastructure-add-virtual-machine' }"
+                           data-ng-bind=":: 'cpci_add_server' | translate">
+                        </a>
                     </li>
                     <li>
                         <button type="button" class="btn fs14"
