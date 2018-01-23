@@ -1,3 +1,38 @@
-<h1 class="oui-header_1">
-    Add a server
-</h1>
+<section class="container-fluid cui-page__content cui-page__content-flex">
+
+    <div class="row d-lg-flex">
+        <div class="col-md-9">
+
+            <cui-wizard-form data-form-title="{{ 'cpcivm_add_title' | translate }}"
+                             data-form-loaded="!$ctrl.loaders.init"
+                             data-form-on-init="$ctrl.initProject()"
+                             data-form-on-cancel="$ctrl.cancel()"
+                             data-form-on-complete="$ctrl.confirm()">
+
+                <cui-wizard-step data-step-title="{{ 'cpcivm_add_step1_title' | translate }}"
+                                 data-step-on-init="$ctrl.initOsList()"
+                                 data-step-loaded="!$ctrl.loaders.step1"
+                                 data-step-completed="$ctrl.model.imageId">
+                    <p>test</p>
+                </cui-wizard-step>
+
+                <cui-wizard-step data-step-title="{{ 'cpcivm_add_step2_title' | translate }}"
+                                 data-step-on-init="$ctrl.initRegionsAndDataCenters()">
+                </cui-wizard-step>
+
+                <cui-wizard-step data-step-title="{{ 'cpcivm_add_step3_title' | translate }}"
+                                 data-step-on-init="$ctrl.initInstanceAndConfiguration()">
+                </cui-wizard-step>
+
+                <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
+                                 data-step-on-init="$ctrl.initBillingPeriod()">
+                </cui-wizard-step>
+            </cui-wizard-form>
+        </div>
+
+        <div class="col-md-3">
+
+        </div>
+    </div>
+
+</section>

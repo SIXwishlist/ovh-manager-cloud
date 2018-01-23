@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<translations>
+    <translation id="cpcivm_add_title">Ajouter un serveur</translation>
+    <translation id="cpcivm_add_step1_title">Sélectionnez un OS ou un Snapshot</translation>
+    <translation id="cpcivm_add_step2_title">Sélectionnez une région et un datacentre</translation>
+    <translation id="cpcivm_add_step3_title">Sélectionnez et configurez votre instance</translation>
+    <translation id="cpcivm_add_step4_title">Sélectionnez une période de facturation</translation>
+</translations>

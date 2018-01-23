@@ -7,7 +7,7 @@ angular.module("managerApp").config($stateProvider => {
             cloudProjectComputeInfrastructure: {
                 templateUrl: "app/cloud/project/compute/infrastructure/virtualMachine/add/cloud-project-compute-infrastructure-virtualMachine-add.html",
                 controller: "CloudProjectComputeInfrastructureVirtualMachineAddCtrl",
-                controllerAs: "ComputeInfrastructureVMAddCtrl"
+                controllerAs: "$ctrl"
             }
         },
         translations: ["common"]
