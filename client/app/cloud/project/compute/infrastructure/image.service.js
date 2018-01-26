@@ -59,6 +59,49 @@
             }
             return augmentedImage;
         }
+
+        getImagesByType (images, imagesTypes, region = null) {
+            const filteredImages = {};
+            const filter = { apps: false };
+
+            if (_.isString(region)) {
+                _.set(filter, "region", region);
+            }
+
+            _.forEach(imagesTypes, imageType => {
+                _.set(filter, "type", imageType);
+                filteredImages[imageType] = _.filter(_.cloneDeep(images), filter);
+            });
+
+            return filteredImages;
+        }
+
+        getApps (images, region = null) {
+            const filter = { apps: true };
+
+            if (_.isString(region)) {
+                _.set(filter, "region", region);
+            }
+
+            return _.filter(_.cloneDeep(images), filter);
+        }
+
+        groupImagesByType (images, imagesTypes, region = null) {
+            const filteredImages = this.getImagesByType(images, imagesTypes, region);
+            const groupedImages = {};
+
+            _.forEach(filteredImages, (list, type) => {
+                groupedImages[type] = _.groupBy(list, "distribution");
+                _.forEach(groupedImages[type], (version, distribution) => {
+                    groupedImages[type][distribution] = _.uniq(_.forEach(version, image => {
+                        delete image.region;
+                        delete image.id;
+                    }), "name");
+                });
+            });
+
+            return groupedImages;
+        }
     }
 
     angular.module("managerApp").service("CloudImageService", CloudImageService);

@@ -12,8 +12,98 @@
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step1_title' | translate }}"
                                  data-step-on-init="$ctrl.initOsList()"
                                  data-step-loaded="!$ctrl.loaders.step1"
-                                 data-step-completed="$ctrl.model.imageId">
-                    <p>test</p>
+                                 data-step-completed="$ctrl.isStep1Valid()">
+
+                    <div data-ng-if="!$ctrl.model.imageType && !$ctrl.model.snapshotId">
+                        <uib-tabset>
+                            <uib-tab index="0" heading="OS Distributions">
+                                <div class="mt-4">
+                                    <div class="cloud-vm-add-os d-md-flex flex-wrap"
+                                         data-ng-repeat="(imageType, distributions) in $ctrl.displayedImages track by imageType">
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
+                                             data-ng-repeat="(distribution, images) in distributions track by $index">
+                                            <div data-ng-if="images.length === 1">
+                                                <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{images[0].nameGeneric}}"
+                                                       data-ng-model="$ctrl.model.imageType"
+                                                       data-ng-value="images[0]">
+                                                <label class="oui-radio__label-container" for="imageType_{{images[0].nameGeneric}}">
+                                                <span class="oui-radio__label"
+                                                      data-ng-bind="distribution"></span>
+                                                    <span class="oui-radio__description"
+                                                          data-ng-bind="images[0].name"></span>
+                                                </label>
+                                            </div>
+                                            <div data-ng-if="images.length > 1">
+                                                <div class="oui-radio__label-container">
+                                                    <div class="oui-radio__label"
+                                                         data-ng-bind="distribution">
+                                                    </div>
+                                                    <div class="oui-radio__description">
+                                                        <oui-action-menu data-text="Choisir"
+                                                                         data-align="start">
+                                                            <oui-action-menu-item data-text="{{ image.nameGeneric }}"
+                                                                                  data-on-click="$ctrl.model.imageType = image"
+                                                                                  data-ng-repeat="image in images track by image.nameGeneric">
+                                                            </oui-action-menu-item>
+                                                        </oui-action-menu>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p>* Windows licenses' costs will be automatically added to the cost of the selected instance.</p>
+                            </uib-tab>
+                            <uib-tab index="1" heading="Distribution + Apps">
+                                <div class="mt-4">
+                                    <div class="cloud-vm-add-os d-md-flex flex-wrap">
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
+                                             data-ng-repeat="app in $ctrl.displayedApps track by app.nameGeneric">
+                                            <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{app.nameGeneric}}"
+                                                   data-ng-model="$ctrl.model.imageType"
+                                                   data-ng-value="app.nameGeneric">
+                                            <label class="oui-radio__label-container" for="imageType_{{app.nameGeneric}}">
+                                            <span class="oui-radio__label"
+                                                  data-ng-bind="app.name"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </uib-tab>
+                            <uib-tab index="2" heading="Custom images">
+                                <div class="mt-4">
+                                    Customs images ???
+                                </div>
+                            </uib-tab>
+                            <uib-tab index="3" heading="Snapshots">
+                                <div class="mt-4">
+                                    <div class="cloud-vm-add-os d-md-flex flex-wrap">
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
+                                             data-ng-repeat="snapshot in $ctrl.snapshots track by snapshot.id">
+                                            <input class="oui-radio__input" type="radio" name="snapshot" id="snapshot_{{snapshot.id}}"
+                                                   data-ng-model="$ctrl.model.snapshotId"
+                                                   data-ng-value="snapshot.id">
+                                            <label class="oui-radio__label-container" for="snapshot_{{snapshot.id}}">
+                                            <span class="oui-radio__label"
+                                                  data-ng-bind="snapshot.name"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </uib-tab>
+                        </uib-tabset>
+                    </div>
+
+                    <div data-ng-if="$ctrl.model.imageType || $ctrl.model.snapshotId">
+                        <div class="row">
+                            <div class="col-xs-4">
+                                {{ $ctrl.model.imageType }}
+                            </div>
+                            <div class="col-xs-8">
+
+                            </div>
+                        </div>
+                    </div>
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step2_title' | translate }}"
@@ -31,7 +121,37 @@
         </div>
 
         <div class="col-md-3">
-
+            <div class="oui-box">
+                <h2 class="oui-header_2 text-center">Summary</h2>
+                <div class="oui-list_steps oui-list_separated">
+                    <ul class="oui-list__items">
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.imageType || $ctrl.model.snapshotId }">
+                            <span class="oui-list__header">Operating System</span>
+                            <span class="oui-list__description"
+                                  data-ng-if="!$ctrl.model.imageType && !$ctrl.model.snapshotId">Undefined</span>
+                            <span class="oui-list__description"
+                                  data-ng-bind="$ctrl.model.imageType"
+                                  data-ng-if="$ctrl.model.imageType || $ctrl.model.snapshotId"></span>
+                        </li>
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
+                            <span class="oui-list__header">Region</span>
+                            <span class="oui-list__description"
+                                  data-ng-if="true">Undefined</span>
+                        </li>
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
+                            <span class="oui-list__header">Instance</span>
+                            <span class="oui-list__description"
+                                  data-ng-if="true">Undefined</span>
+                        </li>
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
+                            <span class="oui-list__header">Name</span>
+                            <span class="oui-list__description"
+                                  data-ng-if="true">Undefined</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
