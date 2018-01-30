@@ -18,17 +18,17 @@
                         <uib-tabset>
                             <uib-tab index="0" heading="OS Distributions">
                                 <div class="mt-4">
-                                    <div class="cloud-vm-add-os d-md-flex flex-wrap"
+                                    <div class="cloud-vm-add-list d-md-flex flex-wrap"
                                          data-ng-repeat="(imageType, distributions) in $ctrl.displayedImages track by imageType">
-                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                              data-ng-repeat="(distribution, images) in distributions track by $index">
                                             <div data-ng-if="images.length === 1">
                                                 <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{images[0].nameGeneric}}"
                                                        data-ng-model="$ctrl.model.imageType"
                                                        data-ng-value="images[0]">
                                                 <label class="oui-radio__label-container" for="imageType_{{images[0].nameGeneric}}">
-                                                <span class="oui-radio__label"
-                                                      data-ng-bind="distribution"></span>
+                                                    <span class="oui-radio__label"
+                                                          data-ng-bind="distribution"></span>
                                                     <span class="oui-radio__description"
                                                           data-ng-bind="images[0].name"></span>
                                                 </label>
@@ -56,12 +56,12 @@
                             </uib-tab>
                             <uib-tab index="1" heading="Distribution + Apps">
                                 <div class="mt-4">
-                                    <div class="cloud-vm-add-os d-md-flex flex-wrap">
-                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
+                                    <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                              data-ng-repeat="app in $ctrl.displayedApps track by app.nameGeneric">
                                             <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{app.nameGeneric}}"
                                                    data-ng-model="$ctrl.model.imageType"
-                                                   data-ng-value="app.nameGeneric">
+                                                   data-ng-value="app">
                                             <label class="oui-radio__label-container" for="imageType_{{app.nameGeneric}}">
                                             <span class="oui-radio__label"
                                                   data-ng-bind="app.name"></span>
@@ -77,12 +77,12 @@
                             </uib-tab>
                             <uib-tab index="3" heading="Snapshots">
                                 <div class="mt-4">
-                                    <div class="cloud-vm-add-os d-md-flex flex-wrap">
-                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-os-item p-2"
-                                             data-ng-repeat="snapshot in $ctrl.snapshots track by snapshot.id">
+                                    <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                             data-ng-repeat="snapshot in $ctrl.displayedSnapshots track by snapshot.id">
                                             <input class="oui-radio__input" type="radio" name="snapshot" id="snapshot_{{snapshot.id}}"
-                                                   data-ng-model="$ctrl.model.snapshotId"
-                                                   data-ng-value="snapshot.id">
+                                                   data-ng-model="$ctrl.model.imageType"
+                                                   data-ng-value="snapshot">
                                             <label class="oui-radio__label-container" for="snapshot_{{snapshot.id}}">
                                             <span class="oui-radio__label"
                                                   data-ng-bind="snapshot.name"></span>
@@ -94,24 +94,100 @@
                         </uib-tabset>
                     </div>
 
-                    <div data-ng-if="$ctrl.model.imageType || $ctrl.model.snapshotId">
+                    <div data-ng-if="$ctrl.model.imageType">
                         <div class="row">
                             <div class="col-xs-4">
-                                {{ $ctrl.model.imageType }}
+                                <div class="oui-box">
+                                    <strong class="d-block text-capitalize"
+                                            data-ng-bind="$ctrl.model.imageType.distribution"
+                                            data-ng-if="$ctrl.model.imageType"></strong>
+                                    <span data-ng-bind="$ctrl.model.imageType.name"></span>
+                                </div>
                             </div>
                             <div class="col-xs-8">
-
+                                <oui-button data-variant="primary"
+                                            data-text="Change"
+                                            data-on-click="$ctrl.resetStep1()">
+                                </oui-button>
                             </div>
                         </div>
                     </div>
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step2_title' | translate }}"
-                                 data-step-on-init="$ctrl.initRegionsAndDataCenters()">
+                                 data-step-on-init="$ctrl.initRegionsAndDataCenters()"
+                                 data-step-loaded="!$ctrl.loaders.step2"
+                                 data-step-completed="$ctrl.isStep2Valid()">
+                    <uib-tabset data-ng-if="!$ctrl.model.region">
+                        <uib-tab index="0" heading="All Regions">
+                            <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                     data-ng-if="$ctrl.displayedRegions.length > 1">
+                                    <input class="oui-radio__input" type="radio" name="region" id="region_auto" value="auto"
+                                           data-ng-model="$ctrl.model.region">
+                                    <label class="oui-radio__label-container" for="region_auto">
+                                        <span class="oui-radio__label">Choose for me</span>
+                                    </label>
+                                </div>
+                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                     data-ng-repeat="region in $ctrl.displayedRegions">
+                                    <input class="oui-radio__input" type="radio" name="region" id="region_{{region.microRegion.code}}"
+                                           data-ng-disabled="region.disabled"
+                                           data-ng-model="$ctrl.model.region"
+                                           data-ng-value="region">
+                                    <label class="oui-radio__label-container" for="region_{{region.microRegion.code}}">
+                                        <span class="oui-radio__label"
+                                              data-ng-bind="region.macroRegion.text"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </uib-tab>
+                        <uib-tab data-ng-repeat="(continent, regions) in $ctrl.groupedRegions track by $index"
+                                 index="($index + 1)" heading="{{continent}}">
+                            <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                     data-ng-repeat="region in regions track by region.microRegion.code">
+                                    <input class="oui-radio__input" type="radio" name="region" id="region_{{region.microRegion.code}}"
+                                           data-ng-disabled="region.disabled"
+                                           data-ng-model="$ctrl.model.region"
+                                           data-ng-value="region">
+                                    <label class="oui-radio__label-container" for="region_{{region.microRegion.code}}">
+                                        <span class="oui-radio__label"
+                                              data-ng-bind="region.macroRegion.text"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </uib-tab>
+                    </uib-tabset>
+
+                    <div data-ng-if="$ctrl.model.region">
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <div class="oui-box"
+                                     data-ng-if="$ctrl.model.region !== 'auto'">
+                                    <strong class="d-block"
+                                            data-ng-bind="$ctrl.model.region.macroRegion.text"></strong>
+                                    <span data-ng-bind="$ctrl.model.region.microRegion.code"></span>
+                                </div>
+                                <div class="oui-box"
+                                     data-ng-if="$ctrl.model.region === 'auto'">
+                                    <strong class="d-block">Automatic</strong>
+                                </div>
+                            </div>
+                            <div class="col-xs-8">
+                                <oui-button data-variant="primary"
+                                            data-text="Change"
+                                            data-on-click="$ctrl.resetStep2()">
+                                </oui-button>
+                            </div>
+                        </div>
+                    </div>
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step3_title' | translate }}"
-                                 data-step-on-init="$ctrl.initInstanceAndConfiguration()">
+                                 data-step-on-init="$ctrl.initInstanceAndConfiguration()"
+                                 data-step-loaded="!$ctrl.loaders.step3"
+                                 data-step-completed="$ctrl.isStep3Valid()">
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
@@ -126,18 +202,22 @@
                 <div class="oui-list_steps oui-list_separated">
                     <ul class="oui-list__items">
                         <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
-                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.imageType || $ctrl.model.snapshotId }">
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.imageType }">
                             <span class="oui-list__header">Operating System</span>
                             <span class="oui-list__description"
-                                  data-ng-if="!$ctrl.model.imageType && !$ctrl.model.snapshotId">Undefined</span>
+                                  data-ng-if="!$ctrl.model.imageType">Undefined</span>
                             <span class="oui-list__description"
-                                  data-ng-bind="$ctrl.model.imageType"
-                                  data-ng-if="$ctrl.model.imageType || $ctrl.model.snapshotId"></span>
+                                  data-ng-bind="$ctrl.model.imageType.name"
+                                  data-ng-if="$ctrl.model.imageType"></span>
                         </li>
-                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.region }">
                             <span class="oui-list__header">Region</span>
                             <span class="oui-list__description"
-                                  data-ng-if="true">Undefined</span>
+                                  data-ng-if="!$ctrl.model.region">Undefined</span>
+                            <span class="oui-list__description"
+                                  data-ng-bind="$ctrl.model.region.microRegion.text"
+                                  data-ng-if="$ctrl.model.region"></span>
                         </li>
                         <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
                             <span class="oui-list__header">Instance</span>

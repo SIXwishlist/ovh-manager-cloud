@@ -62,7 +62,7 @@
 
         getImagesByType (images, imagesTypes, region = null) {
             const filteredImages = {};
-            const filter = { apps: false };
+            const filter = { apps: false, status: "active" };
 
             if (_.isString(region)) {
                 _.set(filter, "region", region);
@@ -77,7 +77,7 @@
         }
 
         getApps (images, region = null) {
-            const filter = { apps: true };
+            const filter = { apps: true, status: "active" };
 
             if (_.isString(region)) {
                 _.set(filter, "region", region);

@@ -3,6 +3,20 @@ class RegionService {
         this.$translate = $translate;
     }
 
+    static addOverQuotaInfos (region, quota) {
+        const quotaByRegion = _.find(quota, { region: _.get(region, "microRegion.code") });
+        const instanceQuota = _.get(quotaByRegion, "instance", false);
+        if (instanceQuota) {
+            if (instanceQuota.maxInstances !== -1 && instanceQuota.usedInstances >= instanceQuota.maxInstances) {
+                region.disabled = "QUOTA_INSTANCE";
+            } else if (instanceQuota.maxRam !== -1 && instanceQuota.usedRAM >= instanceQuota.maxRam) {
+                region.disabled = "QUOTA_RAM";
+            } else if (instanceQuota.maxCores !== -1 && instanceQuota.usedCores >= instanceQuota.maxCores) {
+                region.disabled = "QUOTA_VCPUS";
+            }
+        }
+    }
+
     getMacroRegion (region) {
         const macro = /[\D]{2,3}/.exec(region);
         return macro ? macro[0].toUpperCase() : "";
@@ -39,6 +53,11 @@ class RegionService {
         return `flag-icon-${this.getMacroRegionLowercase(region)}`;
     }
 
+    getTranslatedRegionContinent (region) {
+        const translatedRegionContinent = this.$translate.instant(`cloud_common_region_continent_${this.getMacroRegion(region)}`);
+        return translatedRegionContinent || region;
+    }
+
     getRegionCountry (region) {
         const translatedMicroRegionLocation = this.getTranslatedMicroRegionLocation(region);
         return _.trim(translatedMicroRegionLocation.split("(")[1], ")");
@@ -56,6 +75,7 @@ class RegionService {
                 text: this.getTranslatedMicroRegion(region)
             },
             location: this.getTranslatedMicroRegionLocation(region),
+            continent: this.getTranslatedRegionContinent(region),
             icon: this.getRegionIconFlag(region),
             country: this.getRegionCountry(region)
         };
