@@ -138,24 +138,31 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             flavors: this.OvhApiCloudProjectFlavor.Lexi().query({ serviceName: this.serviceName /* , region: _.get(this.model.region, "microRegion.code", undefined)*/}).$promise
                 .then(flavors => {
                     this.flavors = flavors;
-                    this.displayedFlavors = _.map(_.filter(this.flavors, {
+                    const filteredFlavors = _.filter(_.map(_.filter(flavors, {
                         available: true,
                         osType: this.model.imageType.type
-                    }), flavor => this.CloudFlavorService.augmentFlavor(flavor));
-                    this.enums.flavorsTypes = this.CloudFlavorService.constructor.getFlavorTypes(this.displayedFlavors);
+                    }), flavor => this.CloudFlavorService.augmentFlavor(flavor)), {
+                        diskType: "ssd",
+                        flex: false
+                    });
+                    this.enums.flavorsTypes = this.CloudFlavorService.constructor.getFlavorTypes(filteredFlavors);
+                    return filteredFlavors;
                 }),
             prices: this.OvhCloudPriceHelper.getPrices(this.serviceName)
                 .then(prices => (this.prices = prices))
                 .catch(this.ServiceHelper.errorHandler("cpcivm_addedit_flavor_price_error"))
-        }).then(() => {
-            _.forEach(this.displayedFlavors, flavor => {
+        }).then(({ flavors }) => {
+            _.forEach(flavors, flavor => {
                 this.CloudFlavorService.constructor.addPriceInfos(flavor, this.prices);
                 this.CloudFlavorService.constructor.addOverQuotaInfos(flavor, this.quota);
             });
+            _.remove(flavors, flavor => _.isEmpty(_.get(flavor, "price.price.text", "")));
 
-            _.forEach(this.enums.flavorsTypes, flavorType => {
+            const regionalFlavors = _.uniq(_.remove(flavors, { region: this.model.region.microRegion.code }), "name");
+
+            /* _.forEach(this.enums.flavorsTypes, flavorType => {
                 const category = this.CloudFlavorService.getCategory(flavorType, true);
-            });
+            });*/
         }).finally(() => {
             this.loaders.step3 = false;
         });
