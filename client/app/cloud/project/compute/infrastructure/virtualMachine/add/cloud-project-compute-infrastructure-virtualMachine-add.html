@@ -4,7 +4,6 @@
         <div class="col-md-9">
 
             <cui-wizard-form data-form-title="{{ 'cpcivm_add_title' | translate }}"
-                             data-form-loaded="!$ctrl.loaders.init"
                              data-form-on-init="$ctrl.initProject()"
                              data-form-on-cancel="$ctrl.cancel()"
                              data-form-on-complete="$ctrl.confirm()">
@@ -16,32 +15,38 @@
 
                     <div data-ng-if="!$ctrl.model.imageType && !$ctrl.model.snapshotId">
                         <uib-tabset>
-                            <uib-tab index="0" heading="OS Distributions">
+                            <uib-tab index="0" heading="{{ 'cpcivm_add_step1_tab_os' | translate }}">
                                 <div class="mt-4">
                                     <div class="cloud-vm-add-list d-md-flex flex-wrap"
                                          data-ng-repeat="(imageType, distributions) in $ctrl.displayedImages track by imageType">
                                         <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                              data-ng-repeat="(distribution, images) in distributions track by $index">
-                                            <div data-ng-if="images.length === 1">
+                                            <div class="h-100"
+                                                 data-ng-if="images.length === 1">
                                                 <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{images[0].nameGeneric}}"
                                                        data-ng-model="$ctrl.model.imageType"
                                                        data-ng-value="images[0]">
-                                                <label class="oui-radio__label-container" for="imageType_{{images[0].nameGeneric}}">
-                                                    <span class="oui-radio__label"
-                                                          data-ng-bind="distribution"></span>
+                                                <label class="oui-radio__label-container d-inline-block h-100 w-100" for="imageType_{{images[0].nameGeneric}}">
+                                                    <span class="oui-radio__label">
+                                                        <span data-ng-bind="images[0].name"></span>
+                                                        <sup data-ng-if="imageType === 'windows'">*</sup>
+                                                    </span>
                                                     <span class="oui-radio__description"
-                                                          data-ng-bind="images[0].name"></span>
+                                                          data-translate="cpcivm_add_step1_distribution_last_version">
+                                                    </span>
                                                 </label>
                                             </div>
-                                            <div data-ng-if="images.length > 1">
-                                                <div class="oui-radio__label-container">
-                                                    <div class="oui-radio__label"
-                                                         data-ng-bind="distribution">
+                                            <div class="h-100"
+                                                 data-ng-if="images.length > 1">
+                                                <div class="oui-radio__label-container d-inline-block h-100 w-100">
+                                                    <div class="oui-radio__label pl-0">
+                                                        <span data-ng-bind=":: 'cpcivm_add_distribution_' + distribution | translate"></span>
+                                                        <sup data-ng-if="imageType === 'windows'">*</sup>
                                                     </div>
                                                     <div class="oui-radio__description">
-                                                        <oui-action-menu data-text="Choisir"
+                                                        <oui-action-menu data-text="{{ 'cpcivm_add_step1_distribution_choose' | translate }}"
                                                                          data-align="start">
-                                                            <oui-action-menu-item data-text="{{ image.nameGeneric }}"
+                                                            <oui-action-menu-item data-text="{{ image.name }}"
                                                                                   data-on-click="$ctrl.model.imageType = image"
                                                                                   data-ng-repeat="image in images track by image.nameGeneric">
                                                             </oui-action-menu-item>
@@ -52,9 +57,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p>* Windows licenses' costs will be automatically added to the cost of the selected instance.</p>
+                                <p><sup aria-hidden="true">*</sup> <span data-translate="cpcivm_add_step1_windows_message"></span></p>
                             </uib-tab>
-                            <uib-tab index="1" heading="Distribution + Apps">
+                            <uib-tab index="1" heading="{{ 'cpcivm_add_step1_tab_apps' | translate }}"
+                                     data-ng-if="$ctrl.displayedApps.length > 0">
                                 <div class="mt-4">
                                     <div class="cloud-vm-add-list d-md-flex flex-wrap">
                                         <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
@@ -70,12 +76,14 @@
                                     </div>
                                 </div>
                             </uib-tab>
-                            <uib-tab index="2" heading="Custom images">
+                            <uib-tab index="2" heading="{{ 'cpcivm_add_step1_tab_customs' | translate }}"
+                                     data-ng-if="$ctrl.displayedCustoms.length > 0">
                                 <div class="mt-4">
-                                    Customs images ???
+                                    Customs images
                                 </div>
                             </uib-tab>
-                            <uib-tab index="3" heading="Snapshots">
+                            <uib-tab index="3" heading="{{ 'cpcivm_add_step1_tab_shapshots' | translate }}"
+                                     data-ng-if="$ctrl.displayedSnapshots.length > 0">
                                 <div class="mt-4">
                                     <div class="cloud-vm-add-list d-md-flex flex-wrap">
                                         <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
@@ -95,22 +103,94 @@
                     </div>
 
                     <div data-ng-if="$ctrl.model.imageType">
-                        <div class="row">
-                            <div class="col-xs-4">
-                                <div class="oui-box">
-                                    <strong class="d-block text-capitalize"
-                                            data-ng-bind="$ctrl.model.imageType.distribution"
-                                            data-ng-if="$ctrl.model.imageType"></strong>
-                                    <span data-ng-bind="$ctrl.model.imageType.name"></span>
+                        <div class="oui-field">
+                            <div class="oui-field__content">
+                                <div class="oui-field-control oui-field-control_3">
+                                    <div class="oui-box mb-4">
+                                        <strong data-ng-bind=":: 'cpcivm_add_distribution_' + $ctrl.model.imageType.distribution | translate"></strong>
+                                        <p data-ng-bind="$ctrl.model.imageType.name"></p>
+                                    </div>
+                                </div>
+                                <div class="oui-field-helper oui-field-helper_top">
+                                    <oui-button data-variant="secondary"
+                                                data-text="{{ 'common_modify' | translate }}"
+                                                data-on-click="$ctrl.resetStep1()">
+                                    </oui-button>
                                 </div>
                             </div>
-                            <div class="col-xs-8">
-                                <oui-button data-variant="primary"
-                                            data-text="Change"
-                                            data-on-click="$ctrl.resetStep1()">
-                                </oui-button>
+                        </div>
+                        <div class="mt-4"
+                             data-ng-if="$ctrl.model.imageType.type === 'linux'">
+                            <label class="oui-label" for="sshKey"
+                                   data-translate="cpcivm_add_step1_sshKey_label">
+                            </label>
+                            <p data-translate="cpcivm_add_step1_sshKey_info"></p>
+                            <div class="oui-field"
+                                 data-ng-if="!$ctrl.addingSshKey">
+                                <div class="oui-field__content">
+                                    <div class="oui-field-control oui-field-control_3">
+                                        <label class="oui-select">
+                                            <select class="oui-select__input" id="sshKey" name="sshKey"
+                                                    data-ng-change="$ctrl.checkSshKeyByRegion()"
+                                                    data-ng-model="$ctrl.model.sshKey"
+                                                    data-ng-options="sshKey.name for sshKey in $ctrl.displayedSshKeys track by sshKey.id">
+                                                <option value="" disabled
+                                                        data-translate="common_select"></option>
+                                            </select>
+                                            <span class="oui-icon oui-icon-chevron-down" aria-hidden="true"></span>
+                                        </label>
+                                    </div>
+                                    <div class="oui-field-helper mb-0">
+                                        <oui-button data-variant="secondary"
+                                                    data-text="{{ 'cpcivm_add_step1_sshKey_add' | translate }}"
+                                                    data-on-click="$ctrl.addingSshKey = true">
+                                        </oui-button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div data-ng-if="$ctrl.addingSshKey">
+                                <div class="oui-field">
+                                    <div class="oui-field__content">
+                                        <div class="oui-field-control oui-field-control_3">
+                                            <input type="text" class="oui-input" id="sshKey" placeholder="{{ 'cpcivm_add_step1_sshKey_name_placeholder' | translate }}"
+                                                   data-ng-change=""
+                                                   data-ng-disabled="$ctrl.loaders.adding"
+                                                   data-ng-model="$ctrl.newSshKey.name">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="oui-field">
+                                    <div class="oui-field__content align-items-stretch">
+                                        <div class="oui-field-control oui-field-control_3">
+                                            <textarea class="oui-textarea" id="sshKeyValue" rows="5" placeholder="{{ 'cpcivm_add_step1_sshKey_publicKey_placeholder' | translate }}" aria-describedby="sshKeyMessage"
+                                                      data-ng-disabled="$ctrl.loaders.adding"
+                                                      data-ng-model="$ctrl.newSshKey.publicKey">
+                                            </textarea>
+                                        </div>
+                                        <div class="oui-field-helper d-flex flex-column justify-content-between mb-0">
+                                            <p id="sshKeyMessage">
+                                                <span data-translate="cpcivm_add_step1_sshKey_message"></span><br>
+                                                <a href="" data-translate="cpcivm_add_step1_sshKey_more"></a>.
+                                            </p>
+                                            <div>
+                                                <oui-button data-variant="secondary"
+                                                            data-type="submit"
+                                                            data-text="{{ 'cpcivm_add_step1_sshKey_adding' | translate }}"
+                                                            data-on-click="$ctrl.addSshKey()"
+                                                            data-disabled="$ctrl.loaders.adding">
+                                                </oui-button>
+                                                <oui-button data-variant="link"
+                                                            data-text="{{ 'common_cancel' | translate }}"
+                                                            data-on-click="$ctrl.resetAddingSshKey()">
+                                                </oui-button>
+                                                <oui-spinner data-ng-if="$ctrl.loaders.adding"></oui-spinner>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <p data-translate="cpcivm_add_step1_sshKey_licence"></p>
                     </div>
                 </cui-wizard-step>
 
@@ -119,14 +199,15 @@
                                  data-step-loaded="!$ctrl.loaders.step2"
                                  data-step-completed="$ctrl.isStep2Valid()">
                     <uib-tabset data-ng-if="!$ctrl.model.region">
-                        <uib-tab index="0" heading="All Regions">
+                        <uib-tab index="0" heading="{{ 'cpcivm_add_step2_tab_all' | translate }}">
                             <div class="cloud-vm-add-list d-md-flex flex-wrap">
                                 <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                      data-ng-if="$ctrl.displayedRegions.length > 1">
                                     <input class="oui-radio__input" type="radio" name="region" id="region_auto" value="auto"
                                            data-ng-model="$ctrl.model.region">
-                                    <label class="oui-radio__label-container" for="region_auto">
-                                        <span class="oui-radio__label">Choose for me</span>
+                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_auto">
+                                        <span class="oui-radio__label"
+                                              data-translate="cpcivm_add_step2_choose_auto"></span>
                                     </label>
                                 </div>
                                 <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
@@ -135,9 +216,21 @@
                                            data-ng-disabled="region.disabled"
                                            data-ng-model="$ctrl.model.region"
                                            data-ng-value="region">
-                                    <label class="oui-radio__label-container" for="region_{{region.microRegion.code}}">
+                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_{{region.microRegion.code}}">
                                         <span class="oui-radio__label"
-                                              data-ng-bind="region.macroRegion.text"></span>
+                                              data-ng-bind="region.macroRegion.text">
+                                        </span>
+                                        <span class="oui-radio__description text-center"
+                                              data-ng-if="region.disabled">
+                                            <oui-button data-variant="link"
+                                                        data-text="{{'cpcivm_add_step2_disabled_' + region.disabled | translate}}"
+                                                        data-on-click="$ctrl.updateSshKeyRegion()"
+                                                        data-ng-if="$ctrl.model.sshKey && region.disabled === 'SSH_KEY'">
+                                            </oui-button>
+                                            <span data-translate="'cpcivm_add_step2_disabled_' + region.disabled"
+                                                  data-ng-if="region.disabled !== 'SSH_KEY'">
+                                            </span>
+                                        </span>
                                     </label>
                                 </div>
                             </div>
@@ -151,9 +244,21 @@
                                            data-ng-disabled="region.disabled"
                                            data-ng-model="$ctrl.model.region"
                                            data-ng-value="region">
-                                    <label class="oui-radio__label-container" for="region_{{region.microRegion.code}}">
+                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_{{region.microRegion.code}}">
                                         <span class="oui-radio__label"
-                                              data-ng-bind="region.macroRegion.text"></span>
+                                              data-ng-bind="region.macroRegion.text">
+                                        </span>
+                                        <span class="oui-radio__description text-center"
+                                              data-ng-if="region.disabled">
+                                            <oui-button data-variant="link"
+                                                        data-text="{{'cpcivm_add_step2_disabled_' + region.disabled | translate}}"
+                                                        data-on-click="$ctrl.updateSshKeyRegion()"
+                                                        data-ng-if="$ctrl.model.sshKey && region.disabled === 'SSH_KEY'">
+                                            </oui-button>
+                                            <span data-translate="'cpcivm_add_step2_disabled_' + region.disabled"
+                                                  data-ng-if="region.disabled !== 'SSH_KEY'">
+                                            </span>
+                                        </span>
                                     </label>
                                 </div>
                             </div>
@@ -161,24 +266,26 @@
                     </uib-tabset>
 
                     <div data-ng-if="$ctrl.model.region">
-                        <div class="row">
-                            <div class="col-xs-4">
-                                <div class="oui-box"
-                                     data-ng-if="$ctrl.model.region !== 'auto'">
-                                    <strong class="d-block"
-                                            data-ng-bind="$ctrl.model.region.macroRegion.text"></strong>
-                                    <span data-ng-bind="$ctrl.model.region.microRegion.code"></span>
+                        <div class="oui-field">
+                            <div class="oui-field__content">
+                                <div class="oui-field-control oui-field-control_3">
+                                    <div class="oui-box mb-4"
+                                         data-ng-if="$ctrl.model.region !== 'auto'">
+                                        <strong class="d-block"
+                                                data-ng-bind="$ctrl.model.region.macroRegion.text"></strong>
+                                        <span data-ng-bind="$ctrl.model.region.microRegion.code"></span>
+                                    </div>
+                                    <div class="oui-box mb-4"
+                                         data-ng-if="$ctrl.model.region === 'auto'">
+                                        <strong class="d-block">Automatic</strong>
+                                    </div>
                                 </div>
-                                <div class="oui-box"
-                                     data-ng-if="$ctrl.model.region === 'auto'">
-                                    <strong class="d-block">Automatic</strong>
+                                <div class="oui-field-helper oui-field-helper_top">
+                                    <oui-button data-variant="secondary"
+                                                data-text="{{ 'common_modify' | translate }}"
+                                                data-on-click="$ctrl.resetStep2()">
+                                    </oui-button>
                                 </div>
-                            </div>
-                            <div class="col-xs-8">
-                                <oui-button data-variant="primary"
-                                            data-text="Change"
-                                            data-on-click="$ctrl.resetStep2()">
-                                </oui-button>
                             </div>
                         </div>
                     </div>
@@ -188,6 +295,113 @@
                                  data-step-on-init="$ctrl.initInstanceAndConfiguration()"
                                  data-step-loaded="!$ctrl.loaders.step3"
                                  data-step-completed="$ctrl.isStep3Valid()">
+                    <uib-tabset data-ng-if="!$ctrl.model.flavor">
+                        <uib-tab data-ng-repeat="group in $ctrl.groupedFlavors track by group.category"
+                                 index="$index" heading="{{ 'cpcivm_add_step3_category_' + group.category | translate }}">
+                            <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                     data-ng-repeat="flavor in group.flavors track by flavor.id">
+                                    <input class="oui-radio__input" type="radio" name="flavor" id="flavor_{{flavor.typeGeneric}}"
+                                           data-ng-disabled="flavor.disabled"
+                                           data-ng-model="$ctrl.model.flavor"
+                                           data-ng-value="flavor">
+                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="flavor_{{flavor.typeGeneric}}">
+                                        <span class="oui-radio__label d-flex text-nowrap">
+                                            <span data-ng-bind="flavor.name"></span>
+                                            <span class="ml-auto"
+                                                  data-ng-if="flavor.price">
+                                                <strong class="d-block"
+                                                        data-translate="cpci_vm_flavor_month"
+                                                        data-translate-values="{ price: flavor.price.monthlyPrice.text || '?' }"></strong>
+                                                <span class="d-block"
+                                                      data-translate="cpci_vm_flavor_price"
+                                                      data-translate-values="{ price: flavor.price.price.text || '?' }"></span>
+                                            </span>
+                                        </span>
+                                        <span class="oui-radio__description">
+                                            <span class="d-block">Ram : <span data-ng-bind="(flavor.ram / 1000) | bytes:0:false:'GB'"></span></span>
+                                            <span class="d-block">Core : <span data-ng-bind="flavor.vcpus"></span> vCores (<span data-ng-bind="flavor.frequency"></span> GHz)</span>
+                                            <span class="d-block">Disk : <span data-ng-bind="flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="flavor.diskType | uppercase"></span></span>
+                                            <span class="d-block"
+                                                  data-ng-if="flavor.outboundBandwidth">
+                                                Transfert : <span data-ng-bind="flavor.outboundBandwidth"></span>
+                                            </span>
+                                        </span>
+                                        <span class="oui-radio__description text-center"
+                                              data-ng-if="flavor.disabled">
+                                            <oui-button data-variant="link"
+                                                        data-text="{{'cpcivm_add_step3_disabled_' + flavor.disabled | translate}}"
+                                                        data-on-click="$ctrl.showQuotaMessage(flavor.disabled, { quota: flavor.quota, regions: flavor.regions })"></oui-button>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </uib-tab>
+                    </uib-tabset>
+
+                    <div data-ng-if="$ctrl.model.flavor">
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <div class="oui-box">
+                                    <span class="d-flex text-nowrap">
+                                        <strong data-ng-bind="$ctrl.model.flavor.name"></strong>
+                                        <span class="ml-auto">
+                                            <strong class="d-block"
+                                                    data-translate="cpci_vm_flavor_month"
+                                                    data-translate-values="{ price: $ctrl.model.flavor.price.monthlyPrice.text || '?' }"></strong>
+                                            <span class="d-block"
+                                                  data-translate="cpci_vm_flavor_price"
+                                                  data-translate-values="{ price: $ctrl.model.flavor.price.price.text || '?' }"></span>
+                                        </span>
+                                    </span>
+                                    <div>Ram : <span data-ng-bind="($ctrl.model.flavor.ram / 1000) | bytes:0:false:'GB'"></span></div>
+                                    <div>Core : <span data-ng-bind="$ctrl.model.flavor.vcpus"></span> vCores (<span data-ng-bind="$ctrl.model.flavor.frequency"></span> GHz)</div>
+                                    <div>Disk : <span data-ng-bind="$ctrl.model.flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="$ctrl.model.flavor.diskType | uppercase"></span></div>
+                                    <div data-ng-if="$ctrl.model.flavor.outboundBandwidth">Transfert : <span data-ng-bind="$ctrl.model.flavor.outboundBandwidth"></span></div>
+                                </div>
+                            </div>
+                            <div class="col-xs-8">
+                                <oui-button data-variant="secondary"
+                                            data-text="{{ 'common_modify' | translate }}"
+                                            data-on-click="$ctrl.resetStep3()">
+                                </oui-button>
+                            </div>
+                        </div>
+
+                        <div class="oui-field">
+                            <label class="oui-field__label oui-label" for="model-number">Number of instances to create</label>
+                            <p>All your instances will be same configuration and deployed in the same region.</p>
+                            <div class="oui-field__content">
+                                <oui-numeric id="model-number"
+                                             data-name="number"
+                                             data-min="1"
+                                             data-max="$ctrl.model.flavor.maxInstance > 0 ? $ctrl.model.flavor.maxInstance : 1000"
+                                             data-model="$ctrl.model.number"></oui-numeric>
+                                <div class="oui-field-helper"
+                                     data-ng-if="$ctrl.model.flavor.maxInstance > 0"
+                                     data-translate="cpcivm_addedit_advanced_options_multiple_creation_infos"
+                                     data-translate-values="{
+                                        max: $ctrl.model.flavor.maxInstance,
+                                        type: $ctrl.model.flavor.name,
+                                        region: $ctrl.model.region.microRegion.code }">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="oui-field">
+                            <label class="oui-field__label oui-label" for="model-name">Name your instance</label>
+                            <div class="oui-field__content">
+                                <div class="oui-field-control oui-field-control_4">
+                                    <input class="oui-input" id="model-name" name="name" type="text"
+                                           data-ng-pattern="/^[a-zA-Z0-9_\.\-]+$/"
+                                           data-ng-model="$ctrl.model.name">
+                                </div>
+                                <div class="oui-field-helper">Must contain only numbers, letters, underscores, hyphens, or dots.</div>
+                            </div>
+                            <p data-ng-if="$ctrl.model.number > 1">Additional instances will be prefixed with this name and incremented.</p>
+                        </div>
+                    </div>
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
@@ -198,36 +412,56 @@
 
         <div class="col-md-3">
             <div class="oui-box">
-                <h2 class="oui-header_2 text-center">Summary</h2>
+                <h2 class="oui-header_2 text-center"
+                    data-translate="cpcivm_add_summary_title"></h2>
                 <div class="oui-list_steps oui-list_separated">
                     <ul class="oui-list__items">
                         <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
-                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.imageType }">
-                            <span class="oui-list__header">Operating System</span>
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.isStep1Valid() }">
+                            <span class="oui-list__header"
+                                  data-translate="cpcivm_add_summary_os"></span>
                             <span class="oui-list__description"
-                                  data-ng-if="!$ctrl.model.imageType">Undefined</span>
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.imageType"></span>
                             <span class="oui-list__description"
                                   data-ng-bind="$ctrl.model.imageType.name"
                                   data-ng-if="$ctrl.model.imageType"></span>
                         </li>
                         <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
-                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.region }">
-                            <span class="oui-list__header">Region</span>
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.isStep2Valid() }">
+                            <span class="oui-list__header"
+                                  data-translate="cpcivm_add_summary_region"></span>
                             <span class="oui-list__description"
-                                  data-ng-if="!$ctrl.model.region">Undefined</span>
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.region"></span>
                             <span class="oui-list__description"
                                   data-ng-bind="$ctrl.model.region.microRegion.text"
                                   data-ng-if="$ctrl.model.region"></span>
                         </li>
-                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
-                            <span class="oui-list__header">Instance</span>
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.flavor && $ctrl.model.number > 0 }">
+                            <span class="oui-list__header"
+                                  data-translate="cpcivm_add_summary_instance"></span>
                             <span class="oui-list__description"
-                                  data-ng-if="true">Undefined</span>
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.flavor"></span>
+                            <span class="oui-list__description d-flex"
+                                  data-ng-if="$ctrl.model.flavor">
+                                <span data-ng-bind="$ctrl.model.flavor.name"></span>
+                                <strong class="ml-auto"
+                                        data-ng-bind="'x' + $ctrl.model.number"></strong>
+                            </span>
                         </li>
-                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked">
-                            <span class="oui-list__header">Name</span>
+                        <li class="oui-list__item oui-list__item_optional oui-list__item_checked"
+                            data-ng-class="{ 'oui-list__item_complete': $ctrl.model.flavor && $ctrl.model.name }">
+                            <span class="oui-list__header"
+                                  data-translate="cpcivm_add_summary_name"></span>
                             <span class="oui-list__description"
-                                  data-ng-if="true">Undefined</span>
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.name"></span>
+                            <span class="oui-list__description"
+                                  data-ng-bind="$ctrl.model.name"
+                                  data-ng-if="$ctrl.model.name"></span>
                         </li>
                     </ul>
                 </div>

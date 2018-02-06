@@ -5,10 +5,14 @@
         .oui-button.oui-button_dropdown {
             margin-bottom: 0;
         }
+
+        div.oui-radio__label.pl-0::before {
+            display: none;
+        }
     }
 }
 
-@media only screen and (max-width: (@screen-md-min - 1)) {
+@media only screen and (max-width: (@screen-lg-min - 1)) {
     .cloud-vm-add-list {
         .cloud-vm-add-list-item {
             flex-basis: 50%;

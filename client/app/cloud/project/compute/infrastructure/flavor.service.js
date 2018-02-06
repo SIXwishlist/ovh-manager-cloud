@@ -4,8 +4,8 @@
 
     class CloudFlavorService {
 
-        constructor (CLOUD_FLAVORTYPE_CATEGORY, CLOUD_INSTANCE_CPU_FREQUENCY) {
-            this.CLOUD_FLAVORTYPE_CATEGORY = CLOUD_FLAVORTYPE_CATEGORY;
+        constructor (CLOUD_FLAVORTYPE_CATEGORIES, CLOUD_INSTANCE_CPU_FREQUENCY) {
+            this.CLOUD_FLAVORTYPE_CATEGORIES = CLOUD_FLAVORTYPE_CATEGORIES;
             this.CLOUD_INSTANCE_CPU_FREQUENCY = CLOUD_INSTANCE_CPU_FREQUENCY;
         }
 
@@ -34,13 +34,34 @@
 
         static addOverQuotaInfos (flavor, quota) {
             const quotaByRegion = _.find(quota, { region: flavor.region });
-            if (_.get(quotaByRegion, "instance", false)) {
-                if (quotaByRegion.instance.maxInstances !== -1 && quotaByRegion.instance.usedInstances >= quotaByRegion.instance.maxInstances) {
+            const instanceQuota = _.get(quotaByRegion, "instance", false);
+            if (instanceQuota) {
+                // set over quota reason
+                if (instanceQuota.maxInstances !== -1 && instanceQuota.usedInstances >= instanceQuota.maxInstances) {
                     flavor.disabled = "QUOTA_INSTANCE";
-                } else if (flavor.ram && quotaByRegion.instance.maxRam !== -1 && flavor.ram > quotaByRegion.instance.maxRam - quotaByRegion.instance.usedRAM) {
+                } else if (flavor.ram && instanceQuota.maxRam !== -1 && flavor.ram > instanceQuota.maxRam - instanceQuota.usedRAM) {
                     flavor.disabled = "QUOTA_RAM";
-                } else if (flavor.vcpus && quotaByRegion.instance.maxCores !== -1 && flavor.vcpus > quotaByRegion.instance.maxCores - quotaByRegion.instance.usedCores) {
+                } else if (flavor.vcpus && instanceQuota.maxCores !== -1 && flavor.vcpus > instanceQuota.maxCores - instanceQuota.usedCores) {
                     flavor.disabled = "QUOTA_VCPUS";
+                }
+
+                // set max instances (-1 : unlimited)
+                if (instanceQuota.maxInstances === -1) {
+                    flavor.maxInstance = -1;
+                } else {
+                    flavor.maxInstance = instanceQuota.maxInstances - instanceQuota.usedInstances;
+                }
+
+                if (instanceQuota.maxRam === -1) {
+                    flavor.maxInstance = Math.max(flavor.maxInstance, -1);
+                } else {
+                    flavor.maxInstance = Math.min(flavor.maxInstance > -1 ? flavor.maxInstance : 1000, Math.floor((instanceQuota.maxRam - instanceQuota.usedRAM) / flavor.ram));
+                }
+
+                if (instanceQuota.maxCores === -1) {
+                    flavor.maxInstance = Math.max(flavor.maxInstance, -1);
+                } else {
+                    flavor.maxInstance = Math.min(flavor.maxInstance > -1 ? flavor.maxInstance : 1000, Math.floor((instanceQuota.maxCores - instanceQuota.usedCores) / flavor.vcpus));
                 }
             }
         }
@@ -95,7 +116,7 @@
 
         getCategory (flavorType, withDetails = false) {
             let category = null;
-            for (const c of this.CLOUD_FLAVORTYPE_CATEGORY) {
+            for (const c of this.CLOUD_FLAVORTYPE_CATEGORIES) {
                 if (_.includes(c.types, flavorType)) {
                     category = withDetails ? c : _.get(c, "id");
                     break;
