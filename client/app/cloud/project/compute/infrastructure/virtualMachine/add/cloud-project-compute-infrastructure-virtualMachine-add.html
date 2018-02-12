@@ -105,8 +105,8 @@
                     <div data-ng-if="$ctrl.model.imageType">
                         <div class="oui-field">
                             <div class="oui-field__content">
-                                <div class="oui-field-control oui-field-control_3">
-                                    <div class="oui-box mb-4">
+                                <div class="oui-field-control_3">
+                                    <div class="oui-box">
                                         <strong data-ng-bind=":: 'cpcivm_add_distribution_' + $ctrl.model.imageType.distribution | translate"></strong>
                                         <p data-ng-bind="$ctrl.model.imageType.name"></p>
                                     </div>
@@ -119,8 +119,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-4"
-                             data-ng-if="$ctrl.model.imageType.type === 'linux'">
+                        <div data-ng-if="$ctrl.model.imageType.type === 'linux'">
                             <label class="oui-label" for="sshKey"
                                    data-translate="cpcivm_add_step1_sshKey_label">
                             </label>
@@ -132,6 +131,7 @@
                                         <label class="oui-select">
                                             <select class="oui-select__input" id="sshKey" name="sshKey"
                                                     data-ng-change="$ctrl.checkSshKeyByRegion()"
+                                                    data-ng-disabled="$ctrl.model.region"
                                                     data-ng-model="$ctrl.model.sshKey"
                                                     data-ng-options="sshKey.name for sshKey in $ctrl.displayedSshKeys track by sshKey.id">
                                                 <option value="" disabled
@@ -140,7 +140,7 @@
                                             <span class="oui-icon oui-icon-chevron-down" aria-hidden="true"></span>
                                         </label>
                                     </div>
-                                    <div class="oui-field-helper mb-0">
+                                    <div class="oui-field-helper oui-field-helper_top mb-0">
                                         <oui-button data-variant="secondary"
                                                     data-text="{{ 'cpcivm_add_step1_sshKey_add' | translate }}"
                                                     data-on-click="$ctrl.addingSshKey = true">
@@ -301,11 +301,12 @@
                             <div class="cloud-vm-add-list d-md-flex flex-wrap">
                                 <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                      data-ng-repeat="flavor in group.flavors track by flavor.id">
-                                    <input class="oui-radio__input" type="radio" name="flavor" id="flavor_{{flavor.typeGeneric}}"
+                                    <input class="oui-radio__input" type="radio" name="flavor" id="flavor_{{flavor.id}}"
+                                           data-ng-change="$ctrl.setInstanceName()"
                                            data-ng-disabled="flavor.disabled"
                                            data-ng-model="$ctrl.model.flavor"
                                            data-ng-value="flavor">
-                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="flavor_{{flavor.typeGeneric}}">
+                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="flavor_{{flavor.id}}">
                                         <span class="oui-radio__label d-flex text-nowrap">
                                             <span data-ng-bind="flavor.name"></span>
                                             <span class="ml-auto"
@@ -319,7 +320,7 @@
                                             </span>
                                         </span>
                                         <span class="oui-radio__description">
-                                            <span class="d-block">Ram : <span data-ng-bind="(flavor.ram / 1000) | bytes:0:false:'GB'"></span></span>
+                                            <span class="d-block">Ram : <span data-ng-bind="flavor.ram | bytes:0:false:'MB'"></span></span>
                                             <span class="d-block">Core : <span data-ng-bind="flavor.vcpus"></span> vCores (<span data-ng-bind="flavor.frequency"></span> GHz)</span>
                                             <span class="d-block">Disk : <span data-ng-bind="flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="flavor.diskType | uppercase"></span></span>
                                             <span class="d-block"
@@ -330,9 +331,20 @@
                                         <span class="oui-radio__description text-center"
                                               data-ng-if="flavor.disabled">
                                             <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_' + flavor.disabled | translate}}"
-                                                        data-on-click="$ctrl.showQuotaMessage(flavor.disabled, { quota: flavor.quota, regions: flavor.regions })"></oui-button>
-                                            </span>
+                                                        data-text="{{'cpcivm_add_step3_disabled_NOT_AVAILABLE' | translate}}"
+                                                        data-on-click="$ctrl.showQuotaMessage('NOT_AVAILABLE', { regions: flavor.regions.join(', ') })"
+                                                        data-ng-if="flavor.disabled === 'NOT_AVAILABLE'">
+                                            </oui-button>
+                                            <oui-button data-variant="link"
+                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_RAM' | translate}}"
+                                                        data-on-click="$ctrl.showQuotaMessage('QUOTA_RAM', { quota: $ctrl.CloudFlavorService.getQuotaRam(flavor, $ctrl.quota) })"
+                                                        data-ng-if="flavor.disabled === 'QUOTA_RAM'">
+                                            </oui-button>
+                                            <oui-button data-variant="link"
+                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_VCPUS' | translate}}"
+                                                        data-on-click="$ctrl.showQuotaMessage('QUOTA_VCPUS', { quota: $ctrl.CloudFlavorService.getQuotaCore(flavor, $ctrl.quota) })"
+                                                        data-ng-if="flavor.disabled === 'QUOTA_VCPUS'">
+                                            </oui-button>
                                         </span>
                                     </label>
                                 </div>
@@ -343,7 +355,7 @@
                     <div data-ng-if="$ctrl.model.flavor">
                         <div class="row">
                             <div class="col-xs-4">
-                                <div class="oui-box">
+                                <div class="oui-box mb-4">
                                     <span class="d-flex text-nowrap">
                                         <strong data-ng-bind="$ctrl.model.flavor.name"></strong>
                                         <span class="ml-auto">
@@ -355,7 +367,7 @@
                                                   data-translate-values="{ price: $ctrl.model.flavor.price.price.text || '?' }"></span>
                                         </span>
                                     </span>
-                                    <div>Ram : <span data-ng-bind="($ctrl.model.flavor.ram / 1000) | bytes:0:false:'GB'"></span></div>
+                                    <div>Ram : <span data-ng-bind="$ctrl.model.flavor.ram | bytes:0:false:'MB'"></span></div>
                                     <div>Core : <span data-ng-bind="$ctrl.model.flavor.vcpus"></span> vCores (<span data-ng-bind="$ctrl.model.flavor.frequency"></span> GHz)</div>
                                     <div>Disk : <span data-ng-bind="$ctrl.model.flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="$ctrl.model.flavor.diskType | uppercase"></span></div>
                                     <div data-ng-if="$ctrl.model.flavor.outboundBandwidth">Transfert : <span data-ng-bind="$ctrl.model.flavor.outboundBandwidth"></span></div>
@@ -370,8 +382,9 @@
                         </div>
 
                         <div class="oui-field">
-                            <label class="oui-field__label oui-label" for="model-number">Number of instances to create</label>
-                            <p>All your instances will be same configuration and deployed in the same region.</p>
+                            <label class="oui-field__label oui-label" for="model-number"
+                                   data-translate="cpcivm_add_step3_quantity_label"></label>
+                            <p data-translate="cpcivm_add_step3_quantity_info"></p>
                             <div class="oui-field__content">
                                 <oui-numeric id="model-number"
                                              data-name="number"
@@ -380,38 +393,42 @@
                                              data-model="$ctrl.model.number"></oui-numeric>
                                 <div class="oui-field-helper"
                                      data-ng-if="$ctrl.model.flavor.maxInstance > 0"
-                                     data-translate="cpcivm_addedit_advanced_options_multiple_creation_infos"
+                                     data-translate="cpcivm_add_step3_quantity_help"
                                      data-translate-values="{
                                         max: $ctrl.model.flavor.maxInstance,
                                         type: $ctrl.model.flavor.name,
-                                        region: $ctrl.model.region.microRegion.code }">
+                                        region: $ctrl.model.region.microRegion.text }">
                                 </div>
                             </div>
                         </div>
 
                         <div class="oui-field">
-                            <label class="oui-field__label oui-label" for="model-name">Name your instance</label>
+                            <label class="oui-field__label oui-label" for="model-name"
+                                   data-translate="cpcivm_add_step3_name_label"></label>
                             <div class="oui-field__content">
                                 <div class="oui-field-control oui-field-control_4">
                                     <input class="oui-input" id="model-name" name="name" type="text"
-                                           data-ng-pattern="/^[a-zA-Z0-9_\.\-]+$/"
-                                           data-ng-model="$ctrl.model.name">
+                                           data-ng-change="$ctrl.isNameUpdated = true"
+                                           data-ng-model="$ctrl.model.name"
+                                           data-ng-pattern="/^[a-zA-Z0-9_\.\-]+$/">
                                 </div>
-                                <div class="oui-field-helper">Must contain only numbers, letters, underscores, hyphens, or dots.</div>
+                                <div class="oui-field-helper"
+                                     data-translate="cpcivm_add_step3_name_help"></div>
                             </div>
-                            <p data-ng-if="$ctrl.model.number > 1">Additional instances will be prefixed with this name and incremented.</p>
+                            <p data-translate="cpcivm_add_step3_name_additional">Additional instances will be prefixed with this name and incremented.</p>
                         </div>
                     </div>
                 </cui-wizard-step>
 
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
                                  data-step-on-init="$ctrl.initBillingPeriod()">
+                    <p data-translate="cpcivm_add_step4_message"></p>
                 </cui-wizard-step>
             </cui-wizard-form>
         </div>
 
         <div class="col-md-3">
-            <div class="oui-box">
+            <div class="oui-box" fix-on-scroll>
                 <h2 class="oui-header_2 text-center"
                     data-translate="cpcivm_add_summary_title"></h2>
                 <div class="oui-list_steps oui-list_separated">
@@ -462,6 +479,22 @@
                             <span class="oui-list__description"
                                   data-ng-bind="$ctrl.model.name"
                                   data-ng-if="$ctrl.model.name"></span>
+                        </li>
+                        <li class="oui-list__item">
+                            <h3 data-translate="cpcivm_add_summary_price_monthly"></h3>
+                            <span class="oui-list__description"
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.flavor.price"></span>
+                            <span class="oui-list__description"
+                                  data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.monthlyPrice.value ) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 2"
+                                  data-ng-if="$ctrl.model.flavor.price"></span>
+                            <h3 data-translate="cpcivm_add_summary_price_hourly"></h3>
+                            <span class="oui-list__description"
+                                  data-translate="cpcivm_add_summary_undefined"
+                                  data-ng-if="!$ctrl.model.flavor.price"></span>
+                            <span class="oui-list__description"
+                                  data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.price.value) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 3"
+                                  data-ng-if="$ctrl.model.flavor.price"></span>
                         </li>
                     </ul>
                 </div>

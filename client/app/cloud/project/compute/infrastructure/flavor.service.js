@@ -4,7 +4,8 @@
 
     class CloudFlavorService {
 
-        constructor (CLOUD_FLAVORTYPE_CATEGORIES, CLOUD_INSTANCE_CPU_FREQUENCY) {
+        constructor ($filter, CLOUD_FLAVORTYPE_CATEGORIES, CLOUD_INSTANCE_CPU_FREQUENCY) {
+            this.$filter = $filter;
             this.CLOUD_FLAVORTYPE_CATEGORIES = CLOUD_FLAVORTYPE_CATEGORIES;
             this.CLOUD_INSTANCE_CPU_FREQUENCY = CLOUD_INSTANCE_CPU_FREQUENCY;
         }
@@ -64,6 +65,34 @@
                     flavor.maxInstance = Math.min(flavor.maxInstance > -1 ? flavor.maxInstance : 1000, Math.floor((instanceQuota.maxCores - instanceQuota.usedCores) / flavor.vcpus));
                 }
             }
+        }
+
+        getQuotaRam (flavor, quota) {
+            const quotaByRegion = _.find(quota, { region: flavor.region });
+            const instanceQuota = _.get(quotaByRegion, "instance", false);
+            if (instanceQuota) {
+                return {
+                    max: this.$filter("bytes")(instanceQuota.maxRam, 0, false, "MB"),
+                    used: this.$filter("bytes")(instanceQuota.usedRAM, 0, false, "MB"),
+                    remaining: this.$filter("bytes")(instanceQuota.maxRam - instanceQuota.usedRAM, 0, false, "MB"),
+                    required: this.$filter("bytes")(flavor.ram, 0, false, "MB")
+                };
+            }
+            return null;
+        }
+
+        getQuotaCore (flavor, quota) {
+            const quotaByRegion = _.find(quota, { region: flavor.region });
+            const instanceQuota = _.get(quotaByRegion, "instance", false);
+            if (instanceQuota) {
+                return {
+                    max: instanceQuota.maxCores,
+                    used: instanceQuota.usedCores,
+                    remaining: instanceQuota.maxCores - instanceQuota.usedCores,
+                    required: flavor.vcpus
+                };
+            }
+            return null;
         }
 
         augmentFlavor (flavor) {

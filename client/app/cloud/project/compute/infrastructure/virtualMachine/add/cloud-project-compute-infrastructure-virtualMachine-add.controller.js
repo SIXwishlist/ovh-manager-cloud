@@ -1,6 +1,6 @@
 class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     constructor ($scope, $q, $stateParams, $translate,
-                 CloudFlavorService, CloudImageService, CloudNavigation, ControllerModalHelper,
+                 CloudFlavorService, CloudImageService, CloudNavigation, ControllerModalHelper, CurrencyService,
                  OvhCloudPriceHelper, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
                  RegionService, ServiceHelper) {
         this.$scope = $scope;
@@ -11,6 +11,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         this.CloudImageService = CloudImageService;
         this.CloudNavigation = CloudNavigation;
         this.ControllerModalHelper = ControllerModalHelper;
+        this.CurrencyService = CurrencyService;
         this.OvhCloudPriceHelper = OvhCloudPriceHelper;
         this.OvhApiCloudProjectFlavor = OvhApiCloudProjectFlavor;
         this.OvhApiCloudProjectImage = OvhApiCloudProjectImage;
@@ -32,7 +33,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             flavor: null,
             imageId: null,
             imageType: null,
-            name: null,
+            name: "",
             number: 0,
             region: null,
             sshKey: null
@@ -42,6 +43,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             imagesTypes: [],
             zonesTypes: ["public", "dedicated"]
         };
+        this.isNameUpdated = false;
         this.newSshKey = {
             name: null,
             publicKey: null
@@ -70,8 +72,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     initOsList () {
         _.set(this.loaders, "step1", true);
         return this.$q.all({
-            images: this.OvhApiCloudProjectImage.Lexi().query({ serviceName: this.serviceName }).$promise.catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_images_error")),
-            snapshots: this.OvhApiCloudProjectSnapshot.Lexi().query({ serviceName: this.serviceName }).$promise.catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_shapshots_error")),
+            images: this.OvhApiCloudProjectImage.Lexi().query({ serviceName: this.serviceName }).$promise
+                .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_images_error")),
+            snapshots: this.OvhApiCloudProjectSnapshot.Lexi().query({ serviceName: this.serviceName }).$promise
+                .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_shapshots_error")),
             sshKeys: this.OvhApiCloudProjectSshKey.Lexi().query({ serviceName: this.serviceName }).$promise
         }).then(({ images, snapshots, sshKeys }) => {
             // Image types (linux, windows, ...)
@@ -289,6 +293,13 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
     resetStep3 () {
         _.set(this.model, "flavor", null);
+        _.set(this.model, "number", 1);
+    }
+
+    setInstanceName () {
+        if (_.isEmpty(this.model.name) || !this.isNameUpdated) {
+            this.model.name = `${_.get(this.model, "flavor.name", "")}-${_.get(this.model, "region.microRegion.code", "")}`.toLowerCase();
+        }
     }
 
     showQuotaMessage (type, params = null) {

@@ -48,12 +48,23 @@
     <translation id="cpcivm_add_step3_disabled_NOT_AVAILABLE">Non disponible dans cette région</translation>
     <translation id="cpcivm_add_step3_disabled_QUOTA_RAM">Dépasse le quota (RAM)</translation>
     <translation id="cpcivm_add_step3_disabled_QUOTA_VCPUS">Dépasse le quota (Core)</translation>
-    <translation id="cpcivm_add_step3_disabled_message_NOT_AVAILABLE">Région où cette instance est disponible</translation>
+    <translation id="cpcivm_add_step3_disabled_message_NOT_AVAILABLE">Région(s) où cette instance est disponible : {{regions}}</translation>
+    <translation id="cpcivm_add_step3_disabled_message_QUOTA_RAM">Votre quota de RAM est actuellement de {{quota.remaining}} pour la région sélectionnée. L'instance sélectionnée nécessite {{quota.required}}.</translation>
+    <translation id="cpcivm_add_step3_disabled_message_QUOTA_VCPUS">Votre quota est actuellement de {{quota.remaining}} core(s) pour la région sélectionnée. L'instance sélectionnée nécessite {{quota.required}} core(s).</translation>
+    <translation id="cpcivm_add_step3_quantity_label">Nombre d'instances à créer</translation>
+    <translation id="cpcivm_add_step3_quantity_info">Toutes vos instances seront configurées de la même manière et déployées dans la même région.</translation>
+    <translation id="cpcivm_add_step3_quantity_help">Votre <a ui-sref="iaas.pci-project.billing.quota">quota</a> actuel vous permet de créer simultanéement jusqu'à {{max}} instance(s) de type {{type}} pour la region de {{region}}.</translation>
+    <translation id="cpcivm_add_step3_name_label">Nom de votre instance</translation>
+    <translation id="cpcivm_add_step3_name_help">Doit uniquement contenir des nombres, lettres, underscores, tirets, ou points.</translation>
+    <translation id="cpcivm_add_step3_name_additional">Le nom des instances supplémentaires sera préfixé et incrémeté à partir du terme saisi.</translation>
     <translation id="cpcivm_add_step4_title">Sélectionnez une période de facturation</translation>
+    <translation id="cpcivm_add_step4_message">Le forfait mensuel est facturé dès le démarrage de l'instance et permet d'économiser 50% sur le prix des serveurs. Pour une utilisation sur de courtes périodes, il est recommandé de choisir la facturation à l'heure et de basculer au forfait mensuel par la suite.</translation>
     <translation id="cpcivm_add_summary_title">Résumé</translation>
     <translation id="cpcivm_add_summary_os">Système d'exploitation</translation>
     <translation id="cpcivm_add_summary_region">Région</translation>
     <translation id="cpcivm_add_summary_instance">Instance</translation>
     <translation id="cpcivm_add_summary_name">Nom</translation>
+    <translation id="cpcivm_add_summary_price_hourly">Prix / heure (hors taxes)</translation>
+    <translation id="cpcivm_add_summary_price_monthly">Prix / mois (hors taxes)</translation>
     <translation id="cpcivm_add_summary_undefined">Non renseigné</translation>
 </translations>
