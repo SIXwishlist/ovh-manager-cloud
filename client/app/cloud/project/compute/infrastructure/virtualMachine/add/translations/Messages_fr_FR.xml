@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <translations>
-    <translation id="cpcivm_add_title">Ajouter un serveur</translation>
+    <translation id="cpcivm_add_title" qtlid="19315">Ajouter un serveur</translation>
+    <translation id="cpcivm_add_button_completed_text" qtlid="249094">Lancer maintenant</translation>
     <translation id="cpcivm_add_step1_title">Sélectionnez un OS ou un Snapshot</translation>
     <translation id="cpcivm_add_step1_tab_os">Distributions OS</translation>
     <translation id="cpcivm_add_step1_tab_apps">Distributions + Apps</translation>
@@ -57,6 +58,9 @@
     <translation id="cpcivm_add_step3_name_label">Nom de votre instance</translation>
     <translation id="cpcivm_add_step3_name_help">Doit uniquement contenir des nombres, lettres, underscores, tirets, ou points.</translation>
     <translation id="cpcivm_add_step3_name_additional">Le nom des instances supplémentaires sera préfixé et incrémeté à partir du terme saisi.</translation>
+    <translation id="cpcivm_add_step3_network_label">Associer au réseau privé</translation>
+    <translation id="cpcivm_add_step3_network_info">Protégez vos données grâce à un réseau privé. Il ne boostera pas seulement la connexion entre vos services, il vous permettra aussi... Plus de détails sur les <a href="{{url}}" target="_blanck">réseaux privés</a>.</translation>
+    <translation id="cpcivm_add_step3_network_none">Aucun</translation>
     <translation id="cpcivm_add_step4_title">Sélectionnez une période de facturation</translation>
     <translation id="cpcivm_add_step4_message">Le forfait mensuel est facturé dès le démarrage de l'instance et permet d'économiser 50% sur le prix des serveurs. Pour une utilisation sur de courtes périodes, il est recommandé de choisir la facturation à l'heure et de basculer au forfait mensuel par la suite.</translation>
     <translation id="cpcivm_add_summary_title">Résumé</translation>

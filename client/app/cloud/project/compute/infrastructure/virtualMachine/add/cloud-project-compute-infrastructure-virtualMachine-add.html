@@ -6,8 +6,10 @@
             <cui-wizard-form data-form-title="{{ 'cpcivm_add_title' | translate }}"
                              data-form-on-init="$ctrl.initProject()"
                              data-form-on-cancel="$ctrl.cancel()"
-                             data-form-on-complete="$ctrl.confirm()">
+                             data-form-on-complete="$ctrl.confirm()"
+                             data-form-completed-text="{{ 'cpcivm_add_button_completed_text' | translate }}">
 
+                <!-- Step 1 : OS or SnapShot -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step1_title' | translate }}"
                                  data-step-on-init="$ctrl.initOsList()"
                                  data-step-loaded="!$ctrl.loaders.step1"
@@ -194,6 +196,7 @@
                     </div>
                 </cui-wizard-step>
 
+                <!-- Step 2 : Regions -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step2_title' | translate }}"
                                  data-step-on-init="$ctrl.initRegionsAndDataCenters()"
                                  data-step-loaded="!$ctrl.loaders.step2"
@@ -291,6 +294,7 @@
                     </div>
                 </cui-wizard-step>
 
+                <!-- Step 3 : Instances -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step3_title' | translate }}"
                                  data-step-on-init="$ctrl.initInstanceAndConfiguration()"
                                  data-step-loaded="!$ctrl.loaders.step3"
@@ -353,31 +357,33 @@
                     </uib-tabset>
 
                     <div data-ng-if="$ctrl.model.flavor">
-                        <div class="row">
-                            <div class="col-xs-4">
-                                <div class="oui-box mb-4">
-                                    <span class="d-flex text-nowrap">
-                                        <strong data-ng-bind="$ctrl.model.flavor.name"></strong>
-                                        <span class="ml-auto">
-                                            <strong class="d-block"
-                                                    data-translate="cpci_vm_flavor_month"
-                                                    data-translate-values="{ price: $ctrl.model.flavor.price.monthlyPrice.text || '?' }"></strong>
-                                            <span class="d-block"
-                                                  data-translate="cpci_vm_flavor_price"
-                                                  data-translate-values="{ price: $ctrl.model.flavor.price.price.text || '?' }"></span>
+                        <div class="oui-field">
+                            <div class="oui-field__content">
+                                <div class="oui-field-control oui-field-control_4">
+                                    <div class="oui-box mb-4">
+                                        <span class="d-flex text-nowrap">
+                                            <strong data-ng-bind="$ctrl.model.flavor.name"></strong>
+                                            <span class="ml-auto">
+                                                <strong class="d-block"
+                                                        data-translate="cpci_vm_flavor_month"
+                                                        data-translate-values="{ price: $ctrl.model.flavor.price.monthlyPrice.text || '?' }"></strong>
+                                                <span class="d-block"
+                                                      data-translate="cpci_vm_flavor_price"
+                                                      data-translate-values="{ price: $ctrl.model.flavor.price.price.text || '?' }"></span>
+                                            </span>
                                         </span>
-                                    </span>
-                                    <div>Ram : <span data-ng-bind="$ctrl.model.flavor.ram | bytes:0:false:'MB'"></span></div>
-                                    <div>Core : <span data-ng-bind="$ctrl.model.flavor.vcpus"></span> vCores (<span data-ng-bind="$ctrl.model.flavor.frequency"></span> GHz)</div>
-                                    <div>Disk : <span data-ng-bind="$ctrl.model.flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="$ctrl.model.flavor.diskType | uppercase"></span></div>
-                                    <div data-ng-if="$ctrl.model.flavor.outboundBandwidth">Transfert : <span data-ng-bind="$ctrl.model.flavor.outboundBandwidth"></span></div>
+                                        <div>Ram : <span data-ng-bind="$ctrl.model.flavor.ram | bytes:0:false:'MB'"></span></div>
+                                        <div>Core : <span data-ng-bind="$ctrl.model.flavor.vcpus"></span> vCores (<span data-ng-bind="$ctrl.model.flavor.frequency"></span> GHz)</div>
+                                        <div>Disk : <span data-ng-bind="$ctrl.model.flavor.disk | bytes:2:false:'GB'"></span> <span data-ng-bind="$ctrl.model.flavor.diskType | uppercase"></span></div>
+                                        <div data-ng-if="$ctrl.model.flavor.outboundBandwidth">Transfert : <span data-ng-bind="$ctrl.model.flavor.outboundBandwidth"></span></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-xs-8">
-                                <oui-button data-variant="secondary"
-                                            data-text="{{ 'common_modify' | translate }}"
-                                            data-on-click="$ctrl.resetStep3()">
-                                </oui-button>
+                                <div class="oui-field-helper oui-field-helper_top">
+                                    <oui-button data-variant="secondary"
+                                                data-text="{{ 'common_modify' | translate }}"
+                                                data-on-click="$ctrl.resetStep3()">
+                                    </oui-button>
+                                </div>
                             </div>
                         </div>
 
@@ -417,9 +423,39 @@
                             </div>
                             <p data-translate="cpcivm_add_step3_name_additional">Additional instances will be prefixed with this name and incremented.</p>
                         </div>
+
+                        <div class="oui-field"
+                             data-ng-if="$ctrl.state.hasVRack">
+                            <label class="oui-field__label oui-label" for="model-name"
+                                   data-translate="cpcivm_add_step3_network_label"></label>
+                            <p data-translate="cpcivm_add_step3_network_info"
+                               data-translate-values="{ url: $ctrl.urls.vLansApiGuide }"></p>
+                            <div class="oui-field__content">
+                                <div class="oui-field-control oui-field-control_4">
+                                    <label class="oui-select">
+                                        <select class="oui-select__input" id="network" name="network"
+                                                data-ng-disabled="$ctrl.loaders.privateNetworks"
+                                                data-ng-model="$ctrl.model.network">
+                                            <option value="" disabled
+                                                    data-translate="common_select"></option>
+                                            <option value="none"
+                                                    data-translate="cpcivm_add_step3_network_none"></option>
+                                            <option data-ng-repeat="network in $ctrl.displayedPrivateNetworks track by network.id"
+                                                    data-ng-bind="network.vlanId + ' - ' + network.name"
+                                                    data-ng-value="network.id"></option>
+                                        </select>
+                                        <span class="oui-icon oui-icon-chevron-down" aria-hidden="true"></span>
+                                    </label>
+                                </div>
+                                <div class="oui-field-helper">
+                                    <oui-spinner size="s" data-ng-if="$ctrl.loaders.privateNetworks"></oui-spinner>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </cui-wizard-step>
 
+                <!-- Step 4 : Billing period -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
                                  data-step-on-init="$ctrl.initBillingPeriod()">
                     <p data-translate="cpcivm_add_step4_message"></p>

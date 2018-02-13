@@ -1,8 +1,9 @@
 class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     constructor ($scope, $q, $stateParams, $translate,
                  CloudFlavorService, CloudImageService, CloudNavigation, ControllerModalHelper, CurrencyService,
-                 OvhCloudPriceHelper, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
-                 RegionService, ServiceHelper) {
+                 OvhCloudPriceHelper, OvhApiCloudProject, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectNetworkPrivate, OvhApiCloudProjectNetworkPrivateSubnet,
+                 OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
+                 RegionService, ServiceHelper, ovhDocUrl) {
         this.$scope = $scope;
         this.$q = $q;
         this.$stateParams = $stateParams;
@@ -13,14 +14,18 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         this.ControllerModalHelper = ControllerModalHelper;
         this.CurrencyService = CurrencyService;
         this.OvhCloudPriceHelper = OvhCloudPriceHelper;
+        this.OvhApiCloudProject = OvhApiCloudProject;
         this.OvhApiCloudProjectFlavor = OvhApiCloudProjectFlavor;
         this.OvhApiCloudProjectImage = OvhApiCloudProjectImage;
+        this.OvhApiCloudProjectNetworkPrivate = OvhApiCloudProjectNetworkPrivate;
+        this.OvhApiCloudProjectNetworkPrivateSubnet = OvhApiCloudProjectNetworkPrivateSubnet;
         this.OvhApiCloudProjectQuota = OvhApiCloudProjectQuota;
         this.OvhApiCloudProjectRegion = OvhApiCloudProjectRegion;
         this.OvhApiCloudProjectSnapshot = OvhApiCloudProjectSnapshot;
         this.OvhApiCloudProjectSshKey = OvhApiCloudProjectSshKey;
         this.RegionService = RegionService;
         this.ServiceHelper = ServiceHelper;
+        this.ovhDocUrl = ovhDocUrl;
     }
 
     $onInit () {
@@ -34,6 +39,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             imageId: null,
             imageType: null,
             name: "",
+            network: null,
             number: 0,
             region: null,
             sshKey: null
@@ -48,6 +54,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             name: null,
             publicKey: null
         };
+        this.state = {
+            hasVRack: false
+        };
+        this.urls = {};
     }
 
     initProject () {
@@ -56,6 +66,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
         // Get quota in background
         this.promiseQuota = this.OvhApiCloudProjectQuota.Lexi().query({ serviceName: this.serviceName }).$promise;
+
+        // Set URLs
+        this.urls.vLansApiGuide = this.ovhDocUrl.getDocUrl("g2162.public_cloud_et_vrack_-_comment_utiliser_le_vrack_et_les_reseaux_prives_avec_les_instances_public_cloud");
+        // this.urls.guidesSshkeyURL = this.ovhDocUrl.getDocUrl("g1769.creating_ssh_keys");
     }
 
     cancel () {
@@ -97,13 +111,14 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     isStep1Valid () {
-        return this.model.imageType && (this.model.imageType.type === "linux" && this.model.sshKey);
+        return this.model.imageType && (this.model.imageType.type !== "linux" || this.model.sshKey);
     }
 
     resetStep1 () {
         _.set(this.model, "imageType", null);
-        _.set(this.model, "region", null);
         _.set(this.model, "flavor", null);
+        _.set(this.model, "network", null);
+        _.set(this.model, "region", null);
         _.set(this.model, "sshKey", null);
         this.resetAddingSshKey();
     }
@@ -192,8 +207,9 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     resetStep2 () {
-        _.set(this.model, "region", null);
         _.set(this.model, "flavor", null);
+        _.set(this.model, "network", null);
+        _.set(this.model, "region", null);
     }
 
     updateSshKeyRegion () {
@@ -240,12 +256,26 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                     this.enums.flavorsTypes = this.CloudFlavorService.constructor.getFlavorTypes(filteredFlavors);
                     return filteredFlavors;
                 }),
+            hasVRack: this.OvhApiCloudProject.Lexi().vrack({ serviceName: this.serviceName }).$promise
+                .then(() => true)
+                .catch(err => {
+                    if (_.get(err, "status") === 404) {
+                        return false;
+                    }
+                    return null;
+                }),
             prices: this.promisePrices
                 .then(prices => (this.prices = prices))
                 .catch(this.ServiceHelper.errorHandler("cpcivm_addedit_flavor_price_error"))
-        }).then(({ flavors }) => {
+        }).then(({ flavors, hasVRack }) => {
             // Set instance creation number to 1
             this.model.number = 1;
+
+            // Get Private Networks asynchronously
+            this.state.hasVRack = hasVRack;
+            if (hasVRack) {
+                this.getPrivateNetworks();
+            }
 
             // Add price and quota info to each instance type
             _.forEach(flavors, flavor => {
@@ -274,11 +304,16 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 const category = this.CloudFlavorService.getCategory(flavorType, true);
                 const filteredFlavor = _.filter(this.displayedFlavors, { type: flavorType });
                 if (filteredFlavor.length > 0) {
-                    categorizedFlavors.push({
-                        category: category.id,
-                        order: category.order,
-                        flavors: _.filter(this.displayedFlavors, { type: flavorType })
-                    });
+                    const categoryObject = _.find(categorizedFlavors, { category: category.id });
+                    if (categoryObject) {
+                        categoryObject.flavors = _(categoryObject.flavors).concat(_.filter(this.displayedFlavors, { type: flavorType })).value();
+                    } else {
+                        categorizedFlavors.push({
+                            category: category.id,
+                            order: category.order,
+                            flavors: _.filter(this.displayedFlavors, { type: flavorType })
+                        });
+                    }
                 }
             });
             this.groupedFlavors = _.sortBy(categorizedFlavors, "order");
@@ -288,12 +323,59 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     isStep3Valid () {
-        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0;
+        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && this.model.network;
     }
 
     resetStep3 () {
         _.set(this.model, "flavor", null);
+        _.set(this.model, "network", null);
         _.set(this.model, "number", 1);
+    }
+
+    getPrivateNetworks () {
+        _.set(this.loaders, "privateNetworks", true);
+        return this.OvhApiCloudProjectNetworkPrivate.Lexi().query({ serviceName: this.serviceName }).$promise.then(networks => {
+            this.privateNetworks = networks;
+            return this.getPrivateNetworksSubNets();
+        }).then(subNets => {
+            this.displayedPrivateNetworks = _.chain(this.privateNetworks)
+                .filter(network => {
+                    if (!_.has(subNets, network.id)) {
+                        return false;
+                    }
+                    return _.some(network.regions, "region", this.model.region.microRegion.code);
+                })
+                .sortBy("vlanId")
+                .map(network => {
+                    const pad = Array(5).join("0");
+                    return _.assign(network, {
+                        vlanId: pad.substring(0, pad.length - network.vlanId.toString().length) + network.vlanId
+                    });
+                })
+                .value();
+        }).catch(() => {
+            this.displayedPrivateNetworks = [];
+        }).finally(() => {
+            this.loaders.privateNetworks = false;
+        });
+    }
+
+    getPrivateNetworksSubNets () {
+        let networkIds = [];
+        return _.chain(this.privateNetworks)
+            .map(_.property("id"))
+            .tap(ids => (networkIds = ids))
+            .map(networkId => this.OvhApiCloudProjectNetworkPrivateSubnet.Lexi().query({ serviceName: this.serviceName, networkId }).$promise)
+            .thru(promises => { // .mapKeys on a more recent lodash.
+                const collection = {};
+                _.forEach(promises, (promise, key) => {
+                    collection[networkIds[key]] = promise;
+                });
+                return this.$q.all(collection);
+            })
+            .value()
+            .then(subNets => subNets)
+            .catch(() => []);
     }
 
     setInstanceName () {

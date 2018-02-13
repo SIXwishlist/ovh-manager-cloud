@@ -69,7 +69,8 @@ angular.module("managerApp")
             formLoadedCondition: "<?formLoaded",
             formCompletedCondition: "<formCompleted",
             formCancelledFunction: "&formOnCancel",
-            formCompletedFunction: "&formOnComplete"
+            formCompletedFunction: "&formOnComplete",
+            formCompletedText: "@formCompletedText"
         },
         controllerAs: "$ctrl",
         transclude: true,
