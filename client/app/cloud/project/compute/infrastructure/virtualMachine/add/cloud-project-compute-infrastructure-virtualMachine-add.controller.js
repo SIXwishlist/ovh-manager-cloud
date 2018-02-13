@@ -1,8 +1,8 @@
 class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     constructor ($scope, $q, $stateParams, $translate,
                  CloudFlavorService, CloudImageService, CloudNavigation, ControllerModalHelper, CurrencyService,
-                 OvhCloudPriceHelper, OvhApiCloudProject, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectNetworkPrivate, OvhApiCloudProjectNetworkPrivateSubnet,
-                 OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
+                 OvhCloudPriceHelper, OvhApiCloudProject, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectNetworkPrivate, OvhApiCloudProjectNetworkPublic,
+                 OvhApiCloudProjectNetworkPrivateSubnet, OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
                  RegionService, ServiceHelper, ovhDocUrl) {
         this.$scope = $scope;
         this.$q = $q;
@@ -19,6 +19,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         this.OvhApiCloudProjectImage = OvhApiCloudProjectImage;
         this.OvhApiCloudProjectNetworkPrivate = OvhApiCloudProjectNetworkPrivate;
         this.OvhApiCloudProjectNetworkPrivateSubnet = OvhApiCloudProjectNetworkPrivateSubnet;
+        this.OvhApiCloudProjectNetworkPublic = OvhApiCloudProjectNetworkPublic;
         this.OvhApiCloudProjectQuota = OvhApiCloudProjectQuota;
         this.OvhApiCloudProjectRegion = OvhApiCloudProjectRegion;
         this.OvhApiCloudProjectSnapshot = OvhApiCloudProjectSnapshot;
@@ -35,8 +36,8 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             adding: false
         };
         this.model = {
+            billingPeriod: null,
             flavor: null,
-            imageId: null,
             imageType: null,
             name: "",
             network: null,
@@ -45,6 +46,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             sshKey: null
         };
         this.enums = {
+            billingPeriods: ["monthly", "hourly"],
             flavorsTypes: [],
             imagesTypes: [],
             zonesTypes: ["public", "dedicated"]
@@ -67,6 +69,9 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         // Get quota in background
         this.promiseQuota = this.OvhApiCloudProjectQuota.Lexi().query({ serviceName: this.serviceName }).$promise;
 
+        // Get Public Networks in background
+        this.promisePublicNetworks = this.OvhApiCloudProjectNetworkPublic.Lexi().query({ serviceName: this.serviceName }).$promise;
+
         // Set URLs
         this.urls.vLansApiGuide = this.ovhDocUrl.getDocUrl("g2162.public_cloud_et_vrack_-_comment_utiliser_le_vrack_et_les_reseaux_prives_avec_les_instances_public_cloud");
         // this.urls.guidesSshkeyURL = this.ovhDocUrl.getDocUrl("g1769.creating_ssh_keys");
@@ -80,9 +85,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         this.addVirtualMachine();
     }
 
-    /*
-        Step 1 : OS or SnapShot choice
-     */
+    /*----------------------------------
+     |  Step 1 : OS or SnapShot choice  |
+     ----------------------------------*/
+
     initOsList () {
         _.set(this.loaders, "step1", true);
         return this.$q.all({
@@ -91,23 +97,26 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             snapshots: this.OvhApiCloudProjectSnapshot.Lexi().query({ serviceName: this.serviceName }).$promise
                 .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_shapshots_error")),
             sshKeys: this.OvhApiCloudProjectSshKey.Lexi().query({ serviceName: this.serviceName }).$promise
-        }).then(({ images, snapshots, sshKeys }) => {
-            // Image types (linux, windows, ...)
-            this.enums.imagesTypes = _.uniq(_.pluck(images, "type"));
-            this.images = _.map(_.uniq(images, "id"), this.CloudImageService.augmentImage);
+        })
+            .then(({ images, snapshots, sshKeys }) => {
+                // Image types (linux, windows, ...)
+                this.enums.imagesTypes = _.uniq(_.pluck(images, "type"));
+                this.images = _.map(_.uniq(images, "id"), this.CloudImageService.augmentImage);
 
-            this.displayedSnapshots = _.filter(snapshots, { status: "active" });
-            this.displayedCustoms = [];
-            this.displayedImages = this.CloudImageService.groupImagesByType(this.images, this.enums.imagesTypes);
-            this.displayedApps = _.uniq(_.forEach(this.CloudImageService.getApps(this.images), app => {
-                delete app.region;
-                delete app.id;
-            }), "name");
+                this.displayedSnapshots = _.filter(snapshots, { status: "active" });
+                this.displayedCustoms = [];
+                this.displayedImages = this.CloudImageService.groupImagesByType(this.images, this.enums.imagesTypes);
+                this.displayedApps = _.uniq(_.forEach(this.CloudImageService.getApps(this.images), app => {
+                    delete app.region;
+                    delete app.id;
+                }), "name");
 
-            this.displayedSshKeys = sshKeys;
-        }).catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_general_error")).finally(() => {
-            this.loaders.step1 = false;
-        });
+                this.displayedSshKeys = sshKeys;
+            })
+            .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_general_error"))
+            .finally(() => {
+                this.loaders.step1 = false;
+            });
     }
 
     isStep1Valid () {
@@ -116,10 +125,8 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
     resetStep1 () {
         _.set(this.model, "imageType", null);
-        _.set(this.model, "flavor", null);
-        _.set(this.model, "network", null);
-        _.set(this.model, "region", null);
         _.set(this.model, "sshKey", null);
+        this.resetStep2();
         this.resetAddingSshKey();
     }
 
@@ -138,7 +145,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 this.model.sshKey = newSshKey;
                 this.checkSshKeyByRegion();
             })
-            .catch(this.ServiceHelper.errorHandler("cpcivm_addedit_sshkey_add_submit_error"))
+            .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_sshKey_adding_ERROR"))
             .finally(() => {
                 this.resetAddingSshKey();
                 this.loaders.adding = false;
@@ -162,9 +169,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         });
     }
 
-    /*
-        Step 2: Region and DataCenter choice
-     */
+    /*-----------------------------------------
+     |  Step 2 : Region and DataCenter choice  |
+     -----------------------------------------*/
+
     initRegionsAndDataCenters () {
         _.set(this.loaders, "step2", true);
         return this.$q.all({
@@ -186,20 +194,23 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 }),
             quota: this.promiseQuota
                 .then(quota => (this.quota = quota))
-                .catch(this.ServiceHelper.errorHandler("cpcivm_addedit_quota_error"))
-        }).then(() => {
-            _.forEach(this.displayedRegions, region => {
-                // Add quota info
-                this.RegionService.constructor.addOverQuotaInfos(region, this.quota);
+                .catch(this.ServiceHelper.errorHandler("cpcivm_add_step2_quota_ERROR"))
+        })
+            .then(() => {
+                _.forEach(this.displayedRegions, region => {
+                    // Add quota info
+                    this.RegionService.constructor.addOverQuotaInfos(region, this.quota);
 
-                // Check SSH Key opportunity
-                this.checkSshKeyByRegion();
+                    // Check SSH Key opportunity
+                    this.checkSshKeyByRegion();
+                });
+
+                this.groupedRegions = _.groupBy(this.displayedRegions, "continent");
+            })
+            .catch(this.ServiceHelper.errorHandler("cpcivm_add_step2_regions_ERROR"))
+            .finally(() => {
+                this.loaders.step2 = false;
             });
-
-            this.groupedRegions = _.groupBy(this.displayedRegions, "continent");
-        }).finally(() => {
-            this.loaders.step2 = false;
-        });
     }
 
     isStep2Valid () {
@@ -207,9 +218,8 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     resetStep2 () {
-        _.set(this.model, "flavor", null);
-        _.set(this.model, "network", null);
         _.set(this.model, "region", null);
+        this.resetStep3();
     }
 
     updateSshKeyRegion () {
@@ -237,9 +247,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             });
     }
 
-    /*
-        Step 3: Instance and configuration
-     */
+    /*--------------------------------------
+     |  Step 3: Instance and configuration  |
+     --------------------------------------*/
+
     initInstanceAndConfiguration () {
         _.set(this.loaders, "step3", true);
         return this.$q.all({
@@ -266,70 +277,77 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 }),
             prices: this.promisePrices
                 .then(prices => (this.prices = prices))
-                .catch(this.ServiceHelper.errorHandler("cpcivm_addedit_flavor_price_error"))
-        }).then(({ flavors, hasVRack }) => {
-            // Set instance creation number to 1
-            this.model.number = 1;
+                .catch(this.ServiceHelper.errorHandler("cpcivm_add_step3_flavor_prices_ERROR")),
+            publicNetworks: this.promisePublicNetworks
+                .then(publicNetworks => (this.publicNetworks = publicNetworks))
+                .catch(() => (this.publicNetworks = []))
+        })
+            .then(({ flavors, hasVRack }) => {
+                // Set instance creation number to 1
+                this.model.number = 1;
 
-            // Get Private Networks asynchronously
-            this.state.hasVRack = hasVRack;
-            if (hasVRack) {
-                this.getPrivateNetworks();
-            }
-
-            // Add price and quota info to each instance type
-            _.forEach(flavors, flavor => {
-                this.CloudFlavorService.constructor.addPriceInfos(flavor, this.prices);
-                this.CloudFlavorService.constructor.addOverQuotaInfos(flavor, this.quota);
-            });
-            // Remove flavor without price (not in the catalog)
-            _.remove(flavors, flavor => _.isEmpty(_.get(flavor, "price.price.text", "")));
-
-            this.displayedFlavors = _.uniq(_.remove(flavors, { region: this.model.region.microRegion.code }), "name");
-
-            const usedFlavorNames = _.uniq(_.map(this.displayedFlavors, flavor => flavor.name));
-            const notAvailableFlavors = _.filter(flavors, flavor => !_.include(usedFlavorNames, flavor.name));
-            const outOfRegionFlavors = _.map(_.uniq(notAvailableFlavors, "name"), flavor => {
-                flavor.regions = _.map(_.filter(notAvailableFlavors, f => f.name === flavor.name), "region");
-                flavor.disabled = "NOT_AVAILABLE";
-                delete flavor.region;
-                delete flavor.price;
-                return flavor;
-            });
-
-            this.displayedFlavors = this.displayedFlavors.concat(outOfRegionFlavors);
-
-            const categorizedFlavors = [];
-            _.forEach(this.enums.flavorsTypes, flavorType => {
-                const category = this.CloudFlavorService.getCategory(flavorType, true);
-                const filteredFlavor = _.filter(this.displayedFlavors, { type: flavorType });
-                if (filteredFlavor.length > 0) {
-                    const categoryObject = _.find(categorizedFlavors, { category: category.id });
-                    if (categoryObject) {
-                        categoryObject.flavors = _(categoryObject.flavors).concat(_.filter(this.displayedFlavors, { type: flavorType })).value();
-                    } else {
-                        categorizedFlavors.push({
-                            category: category.id,
-                            order: category.order,
-                            flavors: _.filter(this.displayedFlavors, { type: flavorType })
-                        });
-                    }
+                // Get Private Networks asynchronously
+                this.state.hasVRack = hasVRack;
+                if (hasVRack) {
+                    this.getPrivateNetworks();
                 }
+
+                // Add price and quota info to each instance type
+                _.forEach(flavors, flavor => {
+                    this.CloudFlavorService.constructor.addPriceInfos(flavor, this.prices);
+                    this.CloudFlavorService.constructor.addOverQuotaInfos(flavor, this.quota);
+                });
+                // Remove flavor without price (not in the catalog)
+                _.remove(flavors, flavor => _.isEmpty(_.get(flavor, "price.price.text", "")));
+
+                this.displayedFlavors = _.uniq(_.remove(flavors, { region: this.model.region.microRegion.code }), "name");
+
+                const usedFlavorNames = _.uniq(_.map(this.displayedFlavors, flavor => flavor.name));
+                const notAvailableFlavors = _.filter(flavors, flavor => !_.include(usedFlavorNames, flavor.name));
+                const outOfRegionFlavors = _.map(_.uniq(notAvailableFlavors, "name"), flavor => {
+                    flavor.regions = _.map(_.filter(notAvailableFlavors, f => f.name === flavor.name), "region");
+                    flavor.disabled = "NOT_AVAILABLE";
+                    delete flavor.region;
+                    delete flavor.price;
+                    return flavor;
+                });
+
+                this.displayedFlavors = this.displayedFlavors.concat(outOfRegionFlavors);
+
+                const categorizedFlavors = [];
+                _.forEach(this.enums.flavorsTypes, flavorType => {
+                    const category = this.CloudFlavorService.getCategory(flavorType, true);
+                    const filteredFlavor = _.filter(this.displayedFlavors, { type: flavorType });
+                    if (filteredFlavor.length > 0) {
+                        const categoryObject = _.find(categorizedFlavors, { category: category.id });
+                        if (categoryObject) {
+                            categoryObject.flavors = _(categoryObject.flavors).concat(_.filter(this.displayedFlavors, { type: flavorType })).value();
+                        } else {
+                            categorizedFlavors.push({
+                                category: category.id,
+                                order: category.order,
+                                flavors: _.filter(this.displayedFlavors, { type: flavorType })
+                            });
+                        }
+                    }
+                });
+                this.groupedFlavors = _.sortBy(categorizedFlavors, "order");
+            })
+            .catch(this.ServiceHelper.errorHandler("cpcivm_add_step3_flavors_ERROR"))
+            .finally(() => {
+                this.loaders.step3 = false;
             });
-            this.groupedFlavors = _.sortBy(categorizedFlavors, "order");
-        }).finally(() => {
-            this.loaders.step3 = false;
-        });
     }
 
     isStep3Valid () {
-        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && this.model.network;
+        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && (!this.state.hasVRack || this.model.network);
     }
 
     resetStep3 () {
         _.set(this.model, "flavor", null);
         _.set(this.model, "network", null);
         _.set(this.model, "number", 1);
+        this.resetStep4();
     }
 
     getPrivateNetworks () {
@@ -391,12 +409,21 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         });
     }
 
-    /*
-        Step 4: Billing period
-     */
-    initBillingPeriod () {
+    /*--------------------------
+     |  Step 4: Billing period  |
+     --------------------------*/
 
+    isStep4Valid () {
+        return _.isString(this.model.billingPeriod) && !_.isEmpty(this.model.billingPeriod);
     }
+
+    resetStep4 () {
+        _.set(this.model, "billingPeriod", null);
+    }
+
+    /*-------------------
+     |  Submit the form  |
+     -------------------*/
 
     addVirtualMachine () {
         this.loaders.adding = true;

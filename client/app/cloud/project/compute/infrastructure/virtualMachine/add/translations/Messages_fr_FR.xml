@@ -17,6 +17,7 @@
     <translation id="cpcivm_add_step1_sshKey_info">Au lieu d'utiliser un mot de passe, nous utilisons des clés SSH pour plus de sécurité (Linux seulement)</translation>
     <translation id="cpcivm_add_step1_sshKey_add">Ajouter une clé</translation>
     <translation id="cpcivm_add_step1_sshKey_adding">Ajouter cette clé</translation>
+    <translation id="cpcivm_add_step1_sshKey_adding_ERROR">Impossible d'ajouter la nouvelle clé</translation>
     <translation id="cpcivm_add_step1_sshKey_name_placeholder">Nommer votre clé SSH pour utilisation future</translation>
     <translation id="cpcivm_add_step1_sshKey_publicKey_placeholder">Coller ici une clé existante</translation>
     <translation id="cpcivm_add_step1_sshKey_message">Les clés SSH sont obligatoires pour se connecter à votre service. Vous pouvez utiliser une clé existante ou nous pouvons en générer une pour vous.</translation>
@@ -40,6 +41,8 @@
     <translation id="cpcivm_add_step2_disabled_QUOTA_RAM">Quota de RAM atteint</translation>
     <translation id="cpcivm_add_step2_disabled_QUOTA_VCPUS">Quota de Core atteint</translation>
     <translation id="cpcivm_add_step2_disabled_SSH_KEY">Clé SSH sélectionnée non disponible</translation>
+    <translation id="cpcivm_add_step2_regions_ERROR">Impossible de récupérer la liste des régions et des datacentres disponibles</translation>
+    <translation id="cpcivm_add_step2_quota_ERROR">Impossible de charger votre quota disponible</translation>
     <translation id="cpcivm_add_step3_title">Sélectionnez et configurez votre instance</translation>
     <translation id="cpcivm_add_step3_category_standard">Standard</translation>
     <translation id="cpcivm_add_step3_category_ram">RAM</translation>
@@ -58,11 +61,16 @@
     <translation id="cpcivm_add_step3_name_label">Nom de votre instance</translation>
     <translation id="cpcivm_add_step3_name_help">Doit uniquement contenir des nombres, lettres, underscores, tirets, ou points.</translation>
     <translation id="cpcivm_add_step3_name_additional">Le nom des instances supplémentaires sera préfixé et incrémeté à partir du terme saisi.</translation>
+    <translation id="cpcivm_add_step3_postscript_label">Script de post-installation</translation>
     <translation id="cpcivm_add_step3_network_label">Associer au réseau privé</translation>
     <translation id="cpcivm_add_step3_network_info">Protégez vos données grâce à un réseau privé. Il ne boostera pas seulement la connexion entre vos services, il vous permettra aussi... Plus de détails sur les <a href="{{url}}" target="_blanck">réseaux privés</a>.</translation>
     <translation id="cpcivm_add_step3_network_none">Aucun</translation>
+    <translation id="cpcivm_add_step3_flavor_prices_ERROR">Impossible de récupérer les prix des offres disponibles</translation>
+    <translation id="cpcivm_add_step3_flavors_ERROR">Impossible de récupérer la liste des offres disponibles</translation>
     <translation id="cpcivm_add_step4_title">Sélectionnez une période de facturation</translation>
     <translation id="cpcivm_add_step4_message">Le forfait mensuel est facturé dès le démarrage de l'instance et permet d'économiser 50% sur le prix des serveurs. Pour une utilisation sur de courtes périodes, il est recommandé de choisir la facturation à l'heure et de basculer au forfait mensuel par la suite.</translation>
+    <translation id="cpcivm_add_step4_billing_period_hourly">Horaire</translation>
+    <translation id="cpcivm_add_step4_billing_period_monthly">Mensuel</translation>
     <translation id="cpcivm_add_summary_title">Résumé</translation>
     <translation id="cpcivm_add_summary_os">Système d'exploitation</translation>
     <translation id="cpcivm_add_summary_region">Région</translation>

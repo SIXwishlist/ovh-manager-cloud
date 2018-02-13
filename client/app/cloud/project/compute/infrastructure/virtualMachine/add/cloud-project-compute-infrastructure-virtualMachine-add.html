@@ -204,17 +204,17 @@
                     <uib-tabset data-ng-if="!$ctrl.model.region">
                         <uib-tab index="0" heading="{{ 'cpcivm_add_step2_tab_all' | translate }}">
                             <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                <!--<div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"-->
+                                     <!--data-ng-if="$ctrl.displayedRegions.length > 1">-->
+                                    <!--<input class="oui-radio__input" type="radio" name="region" id="region_auto" value="auto"-->
+                                           <!--data-ng-model="$ctrl.model.region">-->
+                                    <!--<label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_auto">-->
+                                        <!--<span class="oui-radio__label"-->
+                                              <!--data-translate="cpcivm_add_step2_choose_auto"></span>-->
+                                    <!--</label>-->
+                                <!--</div>-->
                                 <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
-                                     data-ng-if="$ctrl.displayedRegions.length > 1">
-                                    <input class="oui-radio__input" type="radio" name="region" id="region_auto" value="auto"
-                                           data-ng-model="$ctrl.model.region">
-                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_auto">
-                                        <span class="oui-radio__label"
-                                              data-translate="cpcivm_add_step2_choose_auto"></span>
-                                    </label>
-                                </div>
-                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
-                                     data-ng-repeat="region in $ctrl.displayedRegions">
+                                     data-ng-repeat="region in $ctrl.displayedRegions track by region.microRegion.code">
                                     <input class="oui-radio__input" type="radio" name="region" id="region_{{region.microRegion.code}}"
                                            data-ng-disabled="region.disabled"
                                            data-ng-model="$ctrl.model.region"
@@ -230,7 +230,7 @@
                                                         data-on-click="$ctrl.updateSshKeyRegion()"
                                                         data-ng-if="$ctrl.model.sshKey && region.disabled === 'SSH_KEY'">
                                             </oui-button>
-                                            <span data-translate="'cpcivm_add_step2_disabled_' + region.disabled"
+                                            <span data-ng-bind=":: 'cpcivm_add_step2_disabled_' + region.disabled | translate"
                                                   data-ng-if="region.disabled !== 'SSH_KEY'">
                                             </span>
                                         </span>
@@ -268,27 +268,26 @@
                         </uib-tab>
                     </uib-tabset>
 
-                    <div data-ng-if="$ctrl.model.region">
-                        <div class="oui-field">
-                            <div class="oui-field__content">
-                                <div class="oui-field-control oui-field-control_3">
-                                    <div class="oui-box mb-4"
-                                         data-ng-if="$ctrl.model.region !== 'auto'">
-                                        <strong class="d-block"
-                                                data-ng-bind="$ctrl.model.region.macroRegion.text"></strong>
-                                        <span data-ng-bind="$ctrl.model.region.microRegion.code"></span>
-                                    </div>
-                                    <div class="oui-box mb-4"
-                                         data-ng-if="$ctrl.model.region === 'auto'">
-                                        <strong class="d-block">Automatic</strong>
-                                    </div>
+                    <div class="oui-field"
+                         data-ng-if="$ctrl.model.region">
+                        <div class="oui-field__content">
+                            <div class="oui-field-control oui-field-control_3">
+                                <div class="oui-box mb-4"
+                                     data-ng-if="$ctrl.model.region !== 'auto'">
+                                    <strong class="d-block"
+                                            data-ng-bind="$ctrl.model.region.macroRegion.text"></strong>
+                                    <span data-ng-bind="$ctrl.model.region.microRegion.code"></span>
                                 </div>
-                                <div class="oui-field-helper oui-field-helper_top">
-                                    <oui-button data-variant="secondary"
-                                                data-text="{{ 'common_modify' | translate }}"
-                                                data-on-click="$ctrl.resetStep2()">
-                                    </oui-button>
-                                </div>
+                                <!--<div class="oui-box mb-4"-->
+                                     <!--data-ng-if="$ctrl.model.region === 'auto'">-->
+                                    <!--<strong class="d-block">Automatic</strong>-->
+                                <!--</div>-->
+                            </div>
+                            <div class="oui-field-helper oui-field-helper_top">
+                                <oui-button data-variant="secondary"
+                                            data-text="{{ 'common_modify' | translate }}"
+                                            data-on-click="$ctrl.resetStep2()">
+                                </oui-button>
                             </div>
                         </div>
                     </div>
@@ -424,6 +423,13 @@
                             <p data-translate="cpcivm_add_step3_name_additional">Additional instances will be prefixed with this name and incremented.</p>
                         </div>
 
+                        <div class="oui-box mb-5">
+                            <label class="oui-label" for="model-postScript"
+                                   data-translate="cpcivm_add_step3_postscript_label"></label>
+                            <textarea class="oui-textarea" id="model-postScript"
+                                      data-ng-model="$ctrl.model.userData"></textarea>
+                        </div>
+
                         <div class="oui-field"
                              data-ng-if="$ctrl.state.hasVRack">
                             <label class="oui-field__label oui-label" for="model-name"
@@ -457,14 +463,57 @@
 
                 <!-- Step 4 : Billing period -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step4_title' | translate }}"
-                                 data-step-on-init="$ctrl.initBillingPeriod()">
-                    <p data-translate="cpcivm_add_step4_message"></p>
+                                 data-step-completed="$ctrl.isStep4Valid()">
+                    <div data-ng-if="!$ctrl.model.billingPeriod">
+                        <p data-translate="cpcivm_add_step4_message"></p>
+                        <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                            <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                 data-ng-repeat="period in $ctrl.enums.billingPeriods track by $index">
+                                <input class="oui-radio__input" type="radio" name="billingPeriod" id="period_{{period}}"
+                                       data-ng-model="$ctrl.model.billingPeriod"
+                                       data-ng-value="period">
+                                <label class="oui-radio__label-container d-inline-block h-100 w-100" for="period_{{period}}">
+                                    <span class="oui-radio__label"
+                                          data-ng-bind=":: 'cpcivm_add_step4_billing_period_' + period | translate">
+                                    </span>
+                                    <span class="oui-radio__description">
+                                        <span data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.price.value) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 3"
+                                              data-ng-if="period === 'hourly'"></span>
+                                        <span data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.monthlyPrice.value ) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 2"
+                                              data-ng-if="period === 'monthly'"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oui-field"
+                         data-ng-if="$ctrl.model.billingPeriod">
+                        <div class="oui-field__content">
+                            <div class="oui-field-control oui-field-control_3">
+                                <div class="oui-box">
+                                    <strong class="d-block"
+                                            data-ng-bind=":: 'cpcivm_add_step4_billing_period_' + $ctrl.model.billingPeriod | translate"></strong>
+                                    <span data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.price.value) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 3"
+                                          data-ng-if="$ctrl.model.billingPeriod === 'hourly'"></span>
+                                    <span data-ng-bind="($ctrl.model.number * $ctrl.model.flavor.price.monthlyPrice.value ) | currency: $ctrl.CurrencyService.getCurrentCurrency(): 2"
+                                          data-ng-if="$ctrl.model.billingPeriod === 'monthly'"></span>
+                                </div>
+                            </div>
+                            <div class="oui-field-helper oui-field-helper_top">
+                                <oui-button data-variant="secondary"
+                                            data-text="{{ 'common_modify' | translate }}"
+                                            data-on-click="$ctrl.resetStep4()">
+                                </oui-button>
+                            </div>
+                        </div>
+                    </div>
                 </cui-wizard-step>
             </cui-wizard-form>
         </div>
 
         <div class="col-md-3">
-            <div class="oui-box" fix-on-scroll>
+            <div class="oui-box">
                 <h2 class="oui-header_2 text-center"
                     data-translate="cpcivm_add_summary_title"></h2>
                 <div class="oui-list_steps oui-list_separated">
