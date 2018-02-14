@@ -43,15 +43,16 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             network: null,
             number: 0,
             region: null,
-            sshKey: null
+            sshKey: null,
+            userData: null
         };
         this.enums = {
             billingPeriods: ["monthly", "hourly"],
             flavorsTypes: [],
-            imagesTypes: [],
-            zonesTypes: ["public", "dedicated"]
+            imagesTypes: []
         };
         this.isNameUpdated = false;
+        this.isPostScriptEnabled = false;
         this.newSshKey = {
             name: null,
             publicKey: null
@@ -348,6 +349,10 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         _.set(this.model, "network", null);
         _.set(this.model, "number", 1);
         this.resetStep4();
+    }
+
+    enablePostScript () {
+        this.isPostScriptEnabled = true;
     }
 
     getPrivateNetworks () {

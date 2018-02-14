@@ -24,7 +24,7 @@
 
         this.$scope.$on("completeStep", (e, data) => {
             const stepIndex = this.steps.findIndex(x => x.id === data.id);
-            this.steps[stepIndex].status = data.condition && "complete" || "active";
+            this.steps[stepIndex].status = data.condition && "complete" || this.steps[stepIndex].status === "complete" && "error" || "active";
             if (stepIndex < (this.steps.length - 1)) {
                 // Triggers the next step loading
                 for (let i = stepIndex + 1; i < this.steps.length; i++) {

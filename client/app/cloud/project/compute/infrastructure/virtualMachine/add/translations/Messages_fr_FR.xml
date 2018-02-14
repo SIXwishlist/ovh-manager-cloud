@@ -62,6 +62,7 @@
     <translation id="cpcivm_add_step3_name_help">Doit uniquement contenir des nombres, lettres, underscores, tirets, ou points.</translation>
     <translation id="cpcivm_add_step3_name_additional">Le nom des instances supplémentaires sera préfixé et incrémeté à partir du terme saisi.</translation>
     <translation id="cpcivm_add_step3_postscript_label">Script de post-installation</translation>
+    <translation id="cpcivm_add_step3_postscript_info">Lorem ipsum explanation on script usage</translation>
     <translation id="cpcivm_add_step3_network_label">Associer au réseau privé</translation>
     <translation id="cpcivm_add_step3_network_info">Protégez vos données grâce à un réseau privé. Il ne boostera pas seulement la connexion entre vos services, il vous permettra aussi... Plus de détails sur les <a href="{{url}}" target="_blanck">réseaux privés</a>.</translation>
     <translation id="cpcivm_add_step3_network_none">Aucun</translation>
