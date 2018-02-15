@@ -39,7 +39,7 @@
     }
 
     $onInit () {
-        this.formDisabledCondition = this.formDisabledCondition || false;
+        this.formSubmittedCondition = this.formSubmittedCondition || false;
         this.formLoadedCondition = this.formLoadedCondition || true;
         this.formCompletedCondition = this.formCompletedCondition || false;
 
@@ -64,9 +64,9 @@ angular.module("managerApp")
         templateUrl: "app/ui-components/wizardForm/wizardForm.html",
         bindings: {
             formTitle: "@formTitle",
-            formDisabledCondition: "<?formDisabled",
             formInitFunction: "&formOnInit",
             formLoadedCondition: "<?formLoaded",
+            formSubmittedCondition: "<?formSubmitted",
             formCompletedCondition: "<formCompleted",
             formCancelledFunction: "&formOnCancel",
             formCompletedFunction: "&formOnComplete",
