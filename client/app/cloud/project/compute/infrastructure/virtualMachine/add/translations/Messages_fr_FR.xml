@@ -42,7 +42,7 @@
     <translation id="cpcivm_add_step2_disabled_QUOTA_RAM">Quota de RAM atteint</translation>
     <translation id="cpcivm_add_step2_disabled_QUOTA_VCPUS">Quota de Core atteint</translation>
     <translation id="cpcivm_add_step2_disabled_SSH_KEY">Clé SSH sélectionnée non disponible</translation>
-    <translation id="cpcivm_add_step2_regions_ERROR">Impossible de récupérer la liste des régions et des datacentres disponibles< : {{message}}/translation>
+    <translation id="cpcivm_add_step2_regions_ERROR">Impossible de récupérer la liste des régions et des datacentres disponibles : {{message}}</translation>
     <translation id="cpcivm_add_step2_quota_ERROR">Impossible de charger votre quota disponible : {{message}}</translation>
     <translation id="cpcivm_add_step3_title">Sélectionnez et configurez votre instance</translation>
     <translation id="cpcivm_add_step3_category_standard">Standard</translation>
