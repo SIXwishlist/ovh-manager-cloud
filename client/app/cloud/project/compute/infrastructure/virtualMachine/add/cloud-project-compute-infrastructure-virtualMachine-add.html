@@ -7,7 +7,8 @@
                              data-form-on-init="$ctrl.initProject()"
                              data-form-on-cancel="$ctrl.cancel()"
                              data-form-on-complete="$ctrl.confirm()"
-                             data-form-completed-text="{{ 'cpcivm_add_button_completed_text' | translate }}">
+                             data-form-completed-text="{{ 'cpcivm_add_button_completed_text' | translate }}"
+                             data-form-submitted="$ctrl.loaders.adding">
 
                 <!-- Step 1 : OS or SnapShot -->
                 <cui-wizard-step data-step-title="{{ 'cpcivm_add_step1_title' | translate }}"
@@ -107,7 +108,7 @@
                     <div data-ng-if="$ctrl.model.imageType">
                         <div class="oui-field">
                             <div class="oui-field__content">
-                                <div class="oui-field-control_3">
+                                <div class="oui-field-control_m">
                                     <div class="oui-box">
                                         <strong data-ng-bind=":: 'cpcivm_add_distribution_' + $ctrl.model.imageType.distribution | translate"></strong>
                                         <p data-ng-bind="$ctrl.model.imageType.name"></p>
@@ -129,7 +130,7 @@
                             <div class="oui-field"
                                  data-ng-if="!$ctrl.addingSshKey">
                                 <div class="oui-field__content">
-                                    <div class="oui-field-control oui-field-control_3">
+                                    <div class="oui-field-control oui-field-control_m">
                                         <label class="oui-select">
                                             <select class="oui-select__input" id="sshKey" name="sshKey"
                                                     data-ng-change="$ctrl.checkSshKeyByRegion()"
@@ -153,7 +154,7 @@
                             <div data-ng-if="$ctrl.addingSshKey">
                                 <div class="oui-field">
                                     <div class="oui-field__content">
-                                        <div class="oui-field-control oui-field-control_3">
+                                        <div class="oui-field-control oui-field-control_m">
                                             <input type="text" class="oui-input" id="sshKey" placeholder="{{ 'cpcivm_add_step1_sshKey_name_placeholder' | translate }}"
                                                    data-ng-change=""
                                                    data-ng-disabled="$ctrl.loaders.adding"
@@ -163,7 +164,7 @@
                                 </div>
                                 <div class="oui-field">
                                     <div class="oui-field__content align-items-stretch">
-                                        <div class="oui-field-control oui-field-control_3">
+                                        <div class="oui-field-control oui-field-control_m">
                                             <textarea class="oui-textarea" id="sshKeyValue" rows="5" placeholder="{{ 'cpcivm_add_step1_sshKey_publicKey_placeholder' | translate }}" aria-describedby="sshKeyMessage"
                                                       data-ng-disabled="$ctrl.loaders.adding"
                                                       data-ng-model="$ctrl.newSshKey.publicKey">
@@ -216,6 +217,7 @@
                                 <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
                                      data-ng-repeat="region in $ctrl.displayedRegions track by region.microRegion.code">
                                     <input class="oui-radio__input" type="radio" name="region" id="region_{{region.microRegion.code}}"
+                                           data-ng-change="$ctrl.setImageId()"
                                            data-ng-disabled="region.disabled"
                                            data-ng-model="$ctrl.model.region"
                                            data-ng-value="region">
@@ -271,7 +273,7 @@
                     <div class="oui-field"
                          data-ng-if="$ctrl.model.region">
                         <div class="oui-field__content">
-                            <div class="oui-field-control oui-field-control_3">
+                            <div class="oui-field-control oui-field-control_m">
                                 <div class="oui-box mb-4"
                                      data-ng-if="$ctrl.model.region !== 'auto'">
                                     <strong class="d-block"
@@ -358,7 +360,7 @@
                     <div data-ng-if="$ctrl.model.flavor">
                         <div class="oui-field">
                             <div class="oui-field__content">
-                                <div class="oui-field-control oui-field-control_4">
+                                <div class="oui-field-control oui-field-control_l">
                                     <div class="oui-box mb-4">
                                         <span class="d-flex text-nowrap">
                                             <strong data-ng-bind="$ctrl.model.flavor.name"></strong>
@@ -390,40 +392,34 @@
                             <label class="oui-field__label oui-label" for="model-number"
                                    data-translate="cpcivm_add_step3_quantity_label"></label>
                             <p data-translate="cpcivm_add_step3_quantity_info"></p>
-                            <div class="oui-field__content">
+                            <div class="oui-field__control">
                                 <oui-numeric id="model-number"
                                              data-name="number"
                                              data-min="1"
                                              data-max="$ctrl.model.flavor.maxInstance > 0 ? $ctrl.model.flavor.maxInstance : 1000"
-                                             data-model="$ctrl.model.number"></oui-numeric>
-                                <div class="oui-field-helper"
-                                     data-ng-if="$ctrl.model.flavor.maxInstance > 0"
-                                     data-translate="cpcivm_add_step3_quantity_help"
-                                     data-translate-values="{
-                                        max: $ctrl.model.flavor.maxInstance,
-                                        type: $ctrl.model.flavor.name,
-                                        region: $ctrl.model.region.microRegion.text }">
-                                </div>
+                                             data-model="$ctrl.model.number">
+                                </oui-numeric>
+                            </div>
+                            <div class="oui-field__helper"
+                                 data-ng-if="$ctrl.model.flavor.maxInstance > 0"
+                                 data-translate="cpcivm_add_step3_quantity_help"
+                                 data-translate-values="{
+                                    max: $ctrl.model.flavor.maxInstance,
+                                    type: $ctrl.model.flavor.name,
+                                    region: $ctrl.model.region.microRegion.text }">
                             </div>
                         </div>
 
-                        <div class="oui-field">
-                            <label class="oui-field__label oui-label" for="model-name"
-                                   data-translate="cpcivm_add_step3_name_label"></label>
-                            <div class="oui-field__content">
-                                <div class="oui-field-control oui-field-control_4">
-                                    <input class="oui-input" id="model-name" name="name" type="text"
-                                           data-ng-change="$ctrl.isNameUpdated = true"
-                                           data-ng-model="$ctrl.model.name"
-                                           data-ng-pattern="/^[a-zA-Z0-9_\.\-]+$/">
-                                </div>
-                                <div class="oui-field-helper"
-                                     data-translate="cpcivm_add_step3_name_help"></div>
-                            </div>
-                            <p data-translate="cpcivm_add_step3_name_additional">Additional instances will be prefixed with this name and incremented.</p>
-                        </div>
+                        <oui-field data-label="{{ 'cpcivm_add_step3_name_label' | translate }}"
+                                   data-help-text="{{ 'cpcivm_add_step3_name_help' | translate }}">
+                            <input class="oui-input" id="model-name" name="name" type="text" required
+                                   data-ng-change="$ctrl.isNameUpdated = true"
+                                   data-ng-model="$ctrl.model.name"
+                                   data-ng-pattern="/^[a-zA-Z0-9_\.\-]+$/">
+                        </oui-field>
+                        <p data-translate="cpcivm_add_step3_name_additional"></p>
 
-                        <div class="oui-box mb-5">
+                        <div class="oui-box my-5">
                             <div class="d-flex align-items-center">
                                 <div class="w-100">
                                     <label class="oui-label" for="model-postScript"
@@ -452,11 +448,11 @@
                             <p data-translate="cpcivm_add_step3_network_info"
                                data-translate-values="{ url: $ctrl.urls.vLansApiGuide }"></p>
                             <div class="oui-field__content">
-                                <div class="oui-field-control oui-field-control_4">
+                                <div class="oui-field-control oui-field-control_l">
                                     <label class="oui-select">
-                                        <select class="oui-select__input" id="network" name="network"
+                                        <select class="oui-select__input" id="network" name="network" required
                                                 data-ng-disabled="$ctrl.loaders.privateNetworks"
-                                                data-ng-model="$ctrl.model.network">
+                                                data-ng-model="$ctrl.model.networkId">
                                             <option value="" disabled
                                                     data-translate="common_select"></option>
                                             <option value="none"
@@ -506,7 +502,7 @@
                     <div class="oui-field"
                          data-ng-if="$ctrl.model.billingPeriod">
                         <div class="oui-field__content">
-                            <div class="oui-field-control oui-field-control_3">
+                            <div class="oui-field-control oui-field-control_m">
                                 <div class="oui-box">
                                     <strong class="d-block"
                                             data-ng-bind=":: 'cpcivm_add_step4_billing_period_' + $ctrl.model.billingPeriod | translate"></strong>
@@ -528,7 +524,7 @@
             </cui-wizard-form>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-3 hidden-xs">
             <div class="oui-box">
                 <h2 class="oui-header_2 text-center"
                     data-translate="cpcivm_add_summary_title"></h2>

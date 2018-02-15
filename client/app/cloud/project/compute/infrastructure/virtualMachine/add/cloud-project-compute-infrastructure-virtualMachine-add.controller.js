@@ -1,8 +1,8 @@
 class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     constructor ($scope, $q, $stateParams, $translate,
                  CloudFlavorService, CloudImageService, CloudNavigation, ControllerModalHelper, CurrencyService,
-                 OvhCloudPriceHelper, OvhApiCloudProject, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectNetworkPrivate, OvhApiCloudProjectNetworkPublic,
-                 OvhApiCloudProjectNetworkPrivateSubnet, OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
+                 OvhCloudPriceHelper, OvhApiCloudProject, OvhApiCloudProjectFlavor, OvhApiCloudProjectImage, OvhApiCloudProjectInstance, OvhApiCloudProjectNetworkPrivate,
+                 OvhApiCloudProjectNetworkPublic, OvhApiCloudProjectNetworkPrivateSubnet, OvhApiCloudProjectQuota, OvhApiCloudProjectRegion, OvhApiCloudProjectSnapshot, OvhApiCloudProjectSshKey,
                  RegionService, ServiceHelper, ovhDocUrl) {
         this.$scope = $scope;
         this.$q = $q;
@@ -17,6 +17,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         this.OvhApiCloudProject = OvhApiCloudProject;
         this.OvhApiCloudProjectFlavor = OvhApiCloudProjectFlavor;
         this.OvhApiCloudProjectImage = OvhApiCloudProjectImage;
+        this.OvhApiCloudProjectInstance = OvhApiCloudProjectInstance;
         this.OvhApiCloudProjectNetworkPrivate = OvhApiCloudProjectNetworkPrivate;
         this.OvhApiCloudProjectNetworkPrivateSubnet = OvhApiCloudProjectNetworkPrivateSubnet;
         this.OvhApiCloudProjectNetworkPublic = OvhApiCloudProjectNetworkPublic;
@@ -40,7 +41,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             flavor: null,
             imageType: null,
             name: "",
-            network: null,
+            networkId: "",
             number: 0,
             region: null,
             sshKey: null,
@@ -94,17 +95,19 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         _.set(this.loaders, "step1", true);
         return this.$q.all({
             images: this.OvhApiCloudProjectImage.Lexi().query({ serviceName: this.serviceName }).$promise
+                .then(images => {
+                    // Image types (linux, windows, ...)
+                    this.enums.imagesTypes = _.uniq(_.pluck(images, "type"));
+                    this.images = _.map(_.uniq(images, "id"), this.CloudImageService.augmentImage);
+                })
                 .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_images_error")),
             snapshots: this.OvhApiCloudProjectSnapshot.Lexi().query({ serviceName: this.serviceName }).$promise
+                .then(snapshots => (this.snapshots = _.map(snapshots, snapshot => _.set(snapshot, "distribution", "linux"))))
                 .catch(this.ServiceHelper.errorHandler("cpcivm_add_step1_shapshots_error")),
             sshKeys: this.OvhApiCloudProjectSshKey.Lexi().query({ serviceName: this.serviceName }).$promise
         })
-            .then(({ images, snapshots, sshKeys }) => {
-                // Image types (linux, windows, ...)
-                this.enums.imagesTypes = _.uniq(_.pluck(images, "type"));
-                this.images = _.map(_.uniq(images, "id"), this.CloudImageService.augmentImage);
-
-                this.displayedSnapshots = _.filter(snapshots, { status: "active" });
+            .then(({ sshKeys }) => {
+                this.displayedSnapshots = _.filter(this.snapshots, { status: "active" });
                 this.displayedCustoms = [];
                 this.displayedImages = this.CloudImageService.groupImagesByType(this.images, this.enums.imagesTypes);
                 this.displayedApps = _.uniq(_.forEach(this.CloudImageService.getApps(this.images), app => {
@@ -215,12 +218,27 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     isStep2Valid () {
-        return this.model.region != null;
+        return this.model.region && this.model.imageId;
     }
 
     resetStep2 () {
         _.set(this.model, "region", null);
         this.resetStep3();
+    }
+
+    setImageId () {
+        if (_.get(this.model, "imageType.visibility", "") === "private") { // snapshot
+            this.model.imageId = this.model.imageType;
+        } else {
+            this.model.imageId = _.find(this.images, {
+                apps: this.model.imageType.apps || false,
+                distribution: this.model.imageType.distribution,
+                nameGeneric: this.model.imageType.nameGeneric,
+                region: this.model.region.microRegion.code,
+                status: "active",
+                type: this.model.imageType.type || "linux"
+            });
+        }
     }
 
     updateSshKeyRegion () {
@@ -341,7 +359,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     }
 
     isStep3Valid () {
-        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && (!this.state.hasVRack || this.model.network);
+        return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && (!this.state.hasVRack || !_.isEmpty(this.model.networkId));
     }
 
     resetStep3 () {
@@ -432,6 +450,35 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
     addVirtualMachine () {
         this.loaders.adding = true;
+        let promiseVm;
+
+        if (!_.isEmpty(this.model.networkId) && this.model.networkId !== "none") {
+            this.model.networks = [{ networkId: this.model.networkId }, { networkId: _.first(this.publicNetworks).id }];
+        }
+
+        const postVm = {
+            flavorId: _.get(this.model, "flavor.id"),
+            imageId: _.get(this.model, "imageId.id"),
+            name: _.get(this.model, "name", "No Name"),
+            region: _.get(this.model, "region.microRegion.code"),
+            sshKeyId: _.get(this.model, "sshKey.id", undefined),
+            monthlyBilling: _.get(this.model, "billingPeriod", "") === "monthly",
+            userData: _.get(this.model, "userData", undefined),
+            networks: _.get(this.model, "networks", undefined)
+        };
+
+        if (this.model.number > 1) {
+            _.set(postVm, "number", this.model.number);
+            promiseVm = this.OvhApiCloudProjectInstance.Lexi().bulk({ serviceName: this.serviceName }, postVm).$promise;
+        } else {
+            promiseVm = this.OvhApiCloudProjectInstance.Lexi().save({serviceName: this.serviceName }, postVm).$promise;
+        }
+
+        return promiseVm.then(() => {
+            this.previousState.go();
+        }).catch(this.ServiceHelper.errorHandler("cpcivm_add_launch_ERROR")).finally(() => {
+            this.loaders.adding = false;
+        });
     }
 }
 
