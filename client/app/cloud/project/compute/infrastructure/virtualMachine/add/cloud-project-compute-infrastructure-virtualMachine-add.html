@@ -224,7 +224,7 @@
                                            data-ng-value="region">
                                     <label class="oui-radio__label-container d-inline-block h-100 w-100" for="region_{{region.microRegion.code}}">
                                         <span class="oui-radio__label"
-                                              data-ng-bind="region.macroRegion.text">
+                                              data-ng-bind="region.microRegion.text">
                                         </span>
                                         <span class="oui-radio__description text-center"
                                               data-ng-if="region.disabled">
@@ -402,12 +402,11 @@
                                 </oui-numeric>
                             </div>
                             <div class="oui-field__helper"
-                                 data-ng-if="$ctrl.model.flavor.maxInstance > 0"
-                                 data-translate="cpcivm_add_step3_quantity_help"
-                                 data-translate-values="{
-                                    max: $ctrl.model.flavor.maxInstance,
-                                    type: $ctrl.model.flavor.name,
-                                    region: $ctrl.model.region.microRegion.text }">
+                                 data-ng-if="$ctrl.model.flavor.maxInstance > 0">
+                                <span data-translate="cpcivm_add_step3_quantity_help"
+                                      data-translate-values="{ max: $ctrl.model.flavor.maxInstance, type: $ctrl.model.flavor.name, region: $ctrl.model.region.microRegion.text }"></span>
+                                <a ui-sref="iaas.pci-project.billing.quota" target="_blank"
+                                   data-translate="cpcivm_add_step3_quota_link_text"></a>.
                             </div>
                         </div>
 

@@ -230,6 +230,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             }).$promise)
             .then(sshKey => {
                 this.model.sshKey = sshKey;
+                _.set(_.find(this.displayedSshKeys, { id: sshKey.id }), "regions", sshKey.regions);
                 this.checkSshKeyByRegion(sshKey.regions);
             })
             .finally(() => {
