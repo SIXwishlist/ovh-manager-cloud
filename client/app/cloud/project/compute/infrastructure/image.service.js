@@ -60,6 +60,10 @@
             return augmentedImage;
         }
 
+        static getImageTypes (images) {
+            return _.uniq(_.pluck(images, "type"));
+        }
+
         getImagesByType (images, imagesTypes, region = null) {
             const filteredImages = {};
             const filter = { apps: false, status: "active" };
@@ -101,6 +105,10 @@
             });
 
             return groupedImages;
+        }
+
+        isSnapshot (image) {
+            return _.get(image, "visibility", "") === "private";
         }
     }
 

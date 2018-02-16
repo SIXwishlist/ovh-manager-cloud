@@ -133,7 +133,7 @@
                                     <div class="oui-field-control oui-field-control_m">
                                         <label class="oui-select">
                                             <select class="oui-select__input" id="sshKey" name="sshKey"
-                                                    data-ng-change="$ctrl.checkSshKeyByRegion()"
+                                                    data-ng-change="$ctrl.checkSshKeyByRegion($ctrl.model.sshKey.regions)"
                                                     data-ng-disabled="$ctrl.model.region"
                                                     data-ng-model="$ctrl.model.sshKey"
                                                     data-ng-options="sshKey.name for sshKey in $ctrl.displayedSshKeys track by sshKey.id">
@@ -157,7 +157,7 @@
                                         <div class="oui-field-control oui-field-control_m">
                                             <input type="text" class="oui-input" id="sshKey" placeholder="{{ 'cpcivm_add_step1_sshKey_name_placeholder' | translate }}"
                                                    data-ng-change=""
-                                                   data-ng-disabled="$ctrl.loaders.adding"
+                                                   data-ng-disabled="$ctrl.loaders.addingSsh"
                                                    data-ng-model="$ctrl.newSshKey.name">
                                         </div>
                                     </div>
@@ -166,27 +166,28 @@
                                     <div class="oui-field__content align-items-stretch">
                                         <div class="oui-field-control oui-field-control_m">
                                             <textarea class="oui-textarea" id="sshKeyValue" rows="5" placeholder="{{ 'cpcivm_add_step1_sshKey_publicKey_placeholder' | translate }}" aria-describedby="sshKeyMessage"
-                                                      data-ng-disabled="$ctrl.loaders.adding"
+                                                      data-ng-disabled="$ctrl.loaders.addingSsh"
                                                       data-ng-model="$ctrl.newSshKey.publicKey">
                                             </textarea>
                                         </div>
                                         <div class="oui-field-helper d-flex flex-column justify-content-between mb-0">
                                             <p id="sshKeyMessage">
                                                 <span data-translate="cpcivm_add_step1_sshKey_message"></span><br>
-                                                <a href="" data-translate="cpcivm_add_step1_sshKey_more"></a>.
+                                                <a data-ng-href="{{$ctrl.urls.guidesSshkey}}" target="_blank"
+                                                   data-translate="cpcivm_add_step1_sshKey_more"></a>.
                                             </p>
                                             <div>
                                                 <oui-button data-variant="secondary"
                                                             data-type="submit"
                                                             data-text="{{ 'cpcivm_add_step1_sshKey_adding' | translate }}"
                                                             data-on-click="$ctrl.addSshKey()"
-                                                            data-disabled="$ctrl.loaders.adding">
+                                                            data-disabled="$ctrl.loaders.addingSsh">
                                                 </oui-button>
                                                 <oui-button data-variant="link"
                                                             data-text="{{ 'common_cancel' | translate }}"
                                                             data-on-click="$ctrl.resetAddingSshKey()">
                                                 </oui-button>
-                                                <oui-spinner data-ng-if="$ctrl.loaders.adding"></oui-spinner>
+                                                <oui-spinner data-ng-if="$ctrl.loaders.addingSsh"></oui-spinner>
                                             </div>
                                         </div>
                                     </div>
@@ -337,17 +338,17 @@
                                               data-ng-if="flavor.disabled">
                                             <oui-button data-variant="link"
                                                         data-text="{{'cpcivm_add_step3_disabled_NOT_AVAILABLE' | translate}}"
-                                                        data-on-click="$ctrl.showQuotaMessage('NOT_AVAILABLE', { regions: flavor.regions.join(', ') })"
+                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('NOT_AVAILABLE', { regions: flavor.regions.join(', ') })"
                                                         data-ng-if="flavor.disabled === 'NOT_AVAILABLE'">
                                             </oui-button>
                                             <oui-button data-variant="link"
                                                         data-text="{{'cpcivm_add_step3_disabled_QUOTA_RAM' | translate}}"
-                                                        data-on-click="$ctrl.showQuotaMessage('QUOTA_RAM', { quota: $ctrl.CloudFlavorService.getQuotaRam(flavor, $ctrl.quota) })"
+                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_RAM', { quota: $ctrl.CloudFlavorService.getQuotaRam(flavor, $ctrl.quota) })"
                                                         data-ng-if="flavor.disabled === 'QUOTA_RAM'">
                                             </oui-button>
                                             <oui-button data-variant="link"
                                                         data-text="{{'cpcivm_add_step3_disabled_QUOTA_VCPUS' | translate}}"
-                                                        data-on-click="$ctrl.showQuotaMessage('QUOTA_VCPUS', { quota: $ctrl.CloudFlavorService.getQuotaCore(flavor, $ctrl.quota) })"
+                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_VCPUS', { quota: $ctrl.CloudFlavorService.getQuotaCore(flavor, $ctrl.quota) })"
                                                         data-ng-if="flavor.disabled === 'QUOTA_VCPUS'">
                                             </oui-button>
                                         </span>

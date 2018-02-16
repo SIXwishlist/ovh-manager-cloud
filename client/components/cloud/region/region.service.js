@@ -17,6 +17,15 @@ class RegionService {
         }
     }
 
+    static checkSshKey (region, sshKeyRegions) {
+        const found = _.indexOf(sshKeyRegions, _.get(region, "microRegion.code"));
+        if (!region.disabled && found === -1) {
+            region.disabled = "SSH_KEY";
+        } else if (region.disabled === "SSH_KEY" && found > -1) {
+            delete region.disabled;
+        }
+    }
+
     getMacroRegion (region) {
         const macro = /[\D]{2,3}/.exec(region);
         return macro ? macro[0].toUpperCase() : "";
