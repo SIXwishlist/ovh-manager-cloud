@@ -22,41 +22,16 @@
                                 <div class="mt-4">
                                     <div class="cloud-vm-add-list d-md-flex flex-wrap"
                                          data-ng-repeat="(imageType, distributions) in $ctrl.displayedImages track by imageType">
-                                        <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
+                                        <div class="cloud-vm-add-list-item p-2"
                                              data-ng-repeat="(distribution, images) in distributions track by $index">
-                                            <div class="h-100"
-                                                 data-ng-if="images.length === 1">
-                                                <input class="oui-radio__input" type="radio" name="imageType" id="imageType_{{images[0].nameGeneric}}"
-                                                       data-ng-model="$ctrl.model.imageType"
-                                                       data-ng-value="images[0]">
-                                                <label class="oui-radio__label-container d-inline-block h-100 w-100" for="imageType_{{images[0].nameGeneric}}">
-                                                    <span class="oui-radio__label">
-                                                        <span data-ng-bind="images[0].name"></span>
-                                                        <sup data-ng-if="imageType === 'windows'">*</sup>
-                                                    </span>
-                                                    <span class="oui-radio__description"
-                                                          data-translate="cpcivm_add_step1_distribution_last_version">
-                                                    </span>
-                                                </label>
-                                            </div>
-                                            <div class="h-100"
-                                                 data-ng-if="images.length > 1">
-                                                <div class="oui-radio__label-container d-inline-block h-100 w-100">
-                                                    <div class="oui-radio__label pl-0">
-                                                        <span data-ng-bind=":: 'cpcivm_add_distribution_' + distribution | translate"></span>
-                                                        <sup data-ng-if="imageType === 'windows'">*</sup>
-                                                    </div>
-                                                    <div class="oui-radio__description">
-                                                        <oui-action-menu data-text="{{ 'cpcivm_add_step1_distribution_choose' | translate }}"
-                                                                         data-align="start">
-                                                            <oui-action-menu-item data-text="{{ image.name }}"
-                                                                                  data-on-click="$ctrl.model.imageType = image"
-                                                                                  data-ng-repeat="image in images track by image.nameGeneric">
-                                                            </oui-action-menu-item>
-                                                        </oui-action-menu>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <oui-select-picker data-id="imageType_{{images[0].nameGeneric}}"
+                                                               data-match="name"
+                                                               data-model="$ctrl.model.imageType"
+                                                               data-name="imageType"
+                                                               data-placeholder="{{ 'cpcivm_add_step1_distribution_choose' | translate }}"
+                                                               data-text="{{:: 'cpcivm_add_distribution_' + distribution | translate}}"
+                                                               data-values="images">
+                                            </oui-select-picker>
                                         </div>
                                     </div>
                                 </div>
