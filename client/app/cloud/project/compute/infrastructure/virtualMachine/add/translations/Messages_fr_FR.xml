@@ -3,7 +3,8 @@
     <translation id="cpcivm_add_title" qtlid="19315">Ajouter un serveur</translation>
     <translation id="cpcivm_add_button_completed_text" qtlid="249094">Lancer maintenant</translation>
     <translation id="cpcivm_add_step1_title">Sélectionnez un OS ou un Snapshot</translation>
-    <translation id="cpcivm_add_step1_tab_os">Distributions OS</translation>
+    <translation id="cpcivm_add_step1_tab_os_linux">Distributions Unix</translation>
+    <translation id="cpcivm_add_step1_tab_os_windows">Distributions Windows</translation>
     <translation id="cpcivm_add_step1_tab_apps">Distributions + Apps</translation>
     <translation id="cpcivm_add_step1_tab_customs">Images personnalisées</translation>
     <translation id="cpcivm_add_step1_tab_shapshots">Snapshots</translation>
@@ -50,6 +51,11 @@
     <translation id="cpcivm_add_step3_category_cpu">CPU</translation>
     <translation id="cpcivm_add_step3_category_gpu">GPU</translation>
     <translation id="cpcivm_add_step3_category_vps">VPS</translation>
+    <translation id="cpcivm_add_step3_label_ram">Mémoire vive :</translation>
+    <translation id="cpcivm_add_step3_label_core">Processeur :</translation>
+    <translation id="cpcivm_add_step3_label_disk">Stockage :</translation>
+    <translation id="cpcivm_add_step3_label_bandwidth">Bande passante :</translation>
+    <translation id="cpcivm_add_step3_value_core">{{vcores}} vCores ({{frequency}} GHz)</translation>
     <translation id="cpcivm_add_step3_disabled_NOT_AVAILABLE">Non disponible dans cette région</translation>
     <translation id="cpcivm_add_step3_disabled_QUOTA_RAM">Dépasse le quota (RAM)</translation>
     <translation id="cpcivm_add_step3_disabled_QUOTA_VCPUS">Dépasse le quota (Core)</translation>

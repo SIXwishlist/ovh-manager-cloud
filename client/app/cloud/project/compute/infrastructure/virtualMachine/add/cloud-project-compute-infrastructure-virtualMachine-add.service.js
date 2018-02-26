@@ -84,12 +84,12 @@ class CloudProjectVirtualMachineAddService {
 
     getRegionsByImageType (regions, allImages, imageType) {
         if (this.CloudImageService.isSnapshot(imageType)) {
-            return _.filter(regions, region => imageType.region === _.get(region, "microRegion.code"));
+            return _.filter(regions, region => _.get(imageType, "region", "") === _.get(region, "microRegion.code"));
         }
 
         const filteredImages = _.filter(_.cloneDeep(allImages), {
-            distribution: imageType.distribution,
-            nameGeneric: imageType.nameGeneric,
+            distribution: _.get(imageType, "distribution"),
+            nameGeneric: _.get(imageType, "nameGeneric"),
             status: "active"
         });
         const filteredRegions = _.uniq(_.map(filteredImages, image => image.region));

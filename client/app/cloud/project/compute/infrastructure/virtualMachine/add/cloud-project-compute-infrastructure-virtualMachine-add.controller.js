@@ -163,7 +163,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             regions: this.OvhApiCloudProjectRegion.Lexi().query({ serviceName: this.serviceName }).$promise
                 .then(regions => {
                     this.regions = _.map(regions, region => this.RegionService.getRegion(region));
-                    this.displayedRegions = this.VirtualMachineAddService.getRegionsByImageType(this.regions, this.images, this.model.imageType);
+                    this.displayedRegions = this.VirtualMachineAddService.getRegionsByImageType(this.regions, this.images, _.get(this.model, "imageType"));
                 }),
             quota: this.promiseQuota
                 .then(quota => (this.quota = quota))
@@ -173,8 +173,11 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 _.forEach(this.displayedRegions, region => {
                     // Add quota info
                     this.RegionService.constructor.addOverQuotaInfos(region, this.quota);
+
                     // Check SSH Key opportunity
-                    this.RegionService.constructor.checkSshKey(region, this.model.sshKey.regions);
+                    if (_.get(this.model, "sshKey.regions", false)) {
+                        this.RegionService.constructor.checkSshKey(region, this.model.sshKey.regions);
+                    }
                 });
 
                 this.groupedRegions = _.groupBy(this.displayedRegions, "continent");
@@ -280,7 +283,14 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 // Remove flavor without price (not in the catalog)
                 _.remove(flavors, flavor => _.isEmpty(_.get(flavor, "price.price.text", "")));
 
-                const filteredFlavors = this.VirtualMachineAddService.getFilteredFlavorsByRegion(flavors, this.model.region.microRegion.code);
+                let filteredFlavors = this.VirtualMachineAddService.getFilteredFlavorsByRegion(flavors, this.model.region.microRegion.code);
+
+                // Remove flavors if OS has restricted
+                const restrictedFlavors = _.get(this.model, "imageId.flavorType") || [];
+                if (restrictedFlavors.length > 0) {
+                    filteredFlavors = _.filter(filteredFlavors, flavor => _.indexOf(restrictedFlavors, flavor.shortType) > -1);
+                }
+
                 this.groupedFlavors = this.VirtualMachineAddService.groupFlavorsByCategory(filteredFlavors, this.enums.flavorsTypes);
             })
             .catch(this.ServiceHelper.errorHandler("cpcivm_add_step3_flavors_ERROR"))
@@ -297,6 +307,9 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         _.set(this.model, "flavor", null);
         _.set(this.model, "network", null);
         _.set(this.model, "number", 1);
+        if (!this.isNameUpdated) {
+            _.set(this.model, "name", "");
+        }
         this.resetStep4();
     }
 
