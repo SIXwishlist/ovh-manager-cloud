@@ -28,6 +28,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
     $onInit () {
         this.serviceName = this.$stateParams.projectId;
         this.previousState = this.CloudNavigation.getPreviousState();
+        this.currentCurrency = this.CurrencyService.getCurrentCurrency();
         this.loaders = {
             adding: false
         };
@@ -163,14 +164,14 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             regions: this.OvhApiCloudProjectRegion.Lexi().query({ serviceName: this.serviceName }).$promise
                 .then(regions => {
                     this.regions = _.map(regions, region => this.RegionService.getRegion(region));
-                    this.displayedRegions = this.VirtualMachineAddService.getRegionsByImageType(this.regions, this.images, _.get(this.model, "imageType"));
+                    return this.VirtualMachineAddService.getRegionsByImageType(this.regions, this.images, _.get(this.model, "imageType"));
                 }),
             quota: this.promiseQuota
                 .then(quota => (this.quota = quota))
                 .catch(this.ServiceHelper.errorHandler("cpcivm_add_step2_quota_ERROR"))
         })
-            .then(() => {
-                _.forEach(this.displayedRegions, region => {
+            .then(({ regions }) => {
+                _.forEach(regions, region => {
                     // Add quota info
                     this.RegionService.constructor.addOverQuotaInfos(region, this.quota);
 
@@ -180,6 +181,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                     }
                 });
 
+                this.displayedRegions = this.VirtualMachineAddService.groupRegionsByDatacenter(regions);
                 this.groupedRegions = _.groupBy(this.displayedRegions, "continent");
             })
             .catch(this.ServiceHelper.errorHandler("cpcivm_add_step2_regions_ERROR"))
@@ -202,19 +204,21 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
             this.model.imageId = this.model.imageType;
         } else {
             this.model.imageId = _.find(this.images, {
-                apps: this.model.imageType.apps || false,
+                apps: _.get(this.model, "imageType.apps", false),
                 distribution: this.model.imageType.distribution,
                 nameGeneric: this.model.imageType.nameGeneric,
                 region: this.model.region.microRegion.code,
                 status: "active",
-                type: this.model.imageType.type || "linux"
+                type: _.get(this.model, "imageType.type", "linux")
             });
         }
     }
 
     checkSshKeyByRegion (sshKeyRegions) {
         _.forEach(this.displayedRegions, region => {
-            this.RegionService.constructor.checkSshKey(region, sshKeyRegions);
+            _.forEach(region.dataCenters, dataCenter => {
+                this.RegionService.constructor.checkSshKey(dataCenter, sshKeyRegions);
+            });
         });
     }
 
@@ -277,7 +281,7 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                 // Add price and quota info to each instance type
                 _.forEach(flavors, flavor => {
                     this.CloudFlavorService.constructor.addPriceInfos(flavor, this.prices);
-                    this.CloudFlavorService.constructor.addOverQuotaInfos(flavor, this.quota);
+                    this.CloudFlavorService.constructor.addOverQuotaInfos(flavor, this.quota, _.get(this.model, "imageId.minDisk", 0), _.get(this.model, "imageId.minRam", 0));
                 });
 
                 // Remove flavor without price (not in the catalog)

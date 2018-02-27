@@ -59,6 +59,9 @@ class CloudProjectVirtualMachineAddService {
 
     getImageApps (images) {
         return _.uniq(_.forEach(this.CloudImageService.getApps(images), app => {
+            app.appName = _.get(app, "name", "")
+                .replace(/^[a-z0-9\s]+\ -\ /ig, "")
+                .replace(" - deprecated", "");
             delete app.region;
             delete app.id;
         }), "name");
@@ -94,6 +97,18 @@ class CloudProjectVirtualMachineAddService {
         });
         const filteredRegions = _.uniq(_.map(filteredImages, image => image.region));
         return _.filter(regions, region => _.indexOf(filteredRegions, _.get(region, "microRegion.code")) > -1);
+    }
+
+    groupRegionsByDatacenter (regions) {
+        const groupedByMacroRegions = _.groupBy(regions, "macroRegion.code");
+        const groupedRegions = _.map(groupedByMacroRegions, microRegions => {
+            const region = _.cloneDeep(microRegions[0]);
+            region.dataCenters = microRegions;
+            delete region.microRegion;
+            delete region.disabled;
+            return region;
+        });
+        return groupedRegions;
     }
 
     groupFlavorsByCategory (flavors, flavorsTypes) {

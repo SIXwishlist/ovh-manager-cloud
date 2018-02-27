@@ -33,7 +33,7 @@
             _.set(flavor, "price", price);
         }
 
-        static addOverQuotaInfos (flavor, quota) {
+        static addOverQuotaInfos (flavor, quota, minDisk = 0, minRam = 0) {
             const quotaByRegion = _.find(quota, { region: flavor.region });
             const instanceQuota = _.get(quotaByRegion, "instance", false);
             if (instanceQuota) {
@@ -65,6 +65,14 @@
                     flavor.maxInstance = Math.min(flavor.maxInstance > -1 ? flavor.maxInstance : 1000, Math.floor((instanceQuota.maxCores - instanceQuota.usedCores) / flavor.vcpus));
                 }
             }
+
+            if (minDisk > flavor.disk && !flavor.disabled) {
+                flavor.disabled = "QUOTA_MINDISK";
+            }
+
+            if (minRam > flavor.ram && !flavor.disabled) {
+                flavor.disabled = "QUOTA_MINRAM";
+            }
         }
 
         getQuotaRam (flavor, quota) {
@@ -93,6 +101,16 @@
                 };
             }
             return null;
+        }
+
+        getRequirements (flavor, image) {
+            return {
+                name: _.get(image, "name", undefined),
+                currentDisk: this.$filter("bytes")(flavor.disk, 2, false, "GB"),
+                currentRam: this.$filter("bytes")(flavor.ram, 2, false, "MB"),
+                requiredDisk: this.$filter("bytes")(image.minDisk, 2, false, "GB") || undefined,
+                requiredRam: this.$filter("bytes")(image.minRam, 2, false, "MB") || undefined
+            };
         }
 
         augmentFlavor (flavor) {
