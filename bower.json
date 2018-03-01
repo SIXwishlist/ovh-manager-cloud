@@ -97,7 +97,9 @@
     "ovh-common-style": "^3.2.2",
     "lodash": "~3.10.1",
     "ovh-angular-actions-menu": "^2.0.0",
-    "ng-at-internet": "^3.0.0"
+    "ng-at-internet": "^3.0.0",
+    "ovh-ui-kit": "feat/oui-select-picker",
+    "ovh-api-services": "fix/add-windows-2016-distribution"
   },
   "overrides": {
     "angular-strap": {
