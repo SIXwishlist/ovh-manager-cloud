@@ -119,9 +119,13 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
         return this.model.imageType && (this.model.imageType.type !== "linux" || this.model.sshKey);
     }
 
-    resetStep1 () {
-        _.set(this.model, "imageType", null);
+    onStep1Change () {
         _.set(this.model, "sshKey", null);
+        _.forEach(this.regions, region => {
+            if (region.disabled === "SSH_KEY") {
+                delete region.disabled;
+            }
+        });
         this.resetStep2();
         this.resetAddingSshKey();
     }
@@ -192,6 +196,15 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
     isStep2Valid () {
         return this.model.region && this.model.imageId;
+    }
+
+    onStep2Change () {
+        this.setImageId();
+        this.resetStep3();
+
+        if (this.flavors) {
+            this.initInstanceAndConfiguration();
+        }
     }
 
     resetStep2 () {
@@ -305,6 +318,16 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
 
     isStep3Valid () {
         return this.model.flavor != null && !_.isEmpty(this.model.name) && this.model.number > 0 && (!this.state.hasVRack || !_.isEmpty(this.model.networkId));
+    }
+
+    onStep3Change () {
+        this.setInstanceName();
+        if (this.model.number > 1) {
+            const max = _.get(this.model, "flavor.maxInstance", 1);
+            if (this.model.number > max) {
+                this.model.number = max;
+            }
+        }
     }
 
     resetStep3 () {
