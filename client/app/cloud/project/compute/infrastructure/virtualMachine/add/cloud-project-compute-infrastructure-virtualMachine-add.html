@@ -279,80 +279,82 @@
                                  index="$index" heading="{{ 'cpcivm_add_step3_category_' + group.category | translate }}">
                             <p class="my-4"
                                data-ng-bind=":: 'cpcivm_add_step3_category_definition_' + group.category | translate"></p>
-                            <div class="cloud-vm-add-list d-md-flex flex-wrap">
-                                <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
-                                     data-ng-repeat="flavor in group.flavors track by flavor.id">
-                                    <input class="oui-radio__input" type="radio" name="flavor" id="flavor_{{flavor.id}}"
-                                           data-ng-change="$ctrl.setInstanceName()"
-                                           data-ng-disabled="flavor.disabled"
-                                           data-ng-model="$ctrl.model.flavor"
-                                           data-ng-value="flavor">
-                                    <label class="oui-radio__label-container d-inline-block h-100 w-100" for="flavor_{{flavor.id}}">
-                                        <span class="oui-radio__label"
-                                              data-ng-bind="flavor.name"></span>
-                                        <span class="oui-radio__section">
-                                            <span class="d-flex flex-wrap">
-                                                <span data-translate="cpcivm_add_step3_label_ram"></span>
-                                                <span class="ml-auto"
-                                                      data-ng-bind="flavor.ram | bytes:0:false:'MB'"></span>
+
+                            <oui-radio-group data-model="$ctrl.model.flavor"
+                                             data-name="flavor"
+                                             data-on-change="$ctrl.setInstanceName()">
+                                <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                    <div class="cloud-vm-add-list-item p-2"
+                                         data-ng-repeat="flavor in group.flavors track by flavor.id">
+                                        <oui-radio data-text="{{flavor.name}}"
+                                                   data-id="flavor_{{flavor.id}}"
+                                                   data-disabled="flavor.disabled"
+                                                   data-thumbnail="true"
+                                                   data-value="flavor">
+                                            <span class="oui-radio__section">
+                                                <span class="d-flex flex-wrap">
+                                                    <span data-translate="cpcivm_add_step3_label_ram"></span>
+                                                    <span class="ml-auto"
+                                                          data-ng-bind="flavor.ram | bytes:0:false:'MB'"></span>
+                                                </span>
+                                                <span class="d-flex flex-wrap">
+                                                    <span data-translate="cpcivm_add_step3_label_core"></span>
+                                                    <span class="ml-auto"
+                                                          data-translate="cpcivm_add_step3_value_core"
+                                                          data-translate-values="{ vcores: flavor.vcpus, frequency: flavor.frequency }"></span>
+                                                </span>
+                                                <span class="d-flex flex-wrap">
+                                                    <span data-translate="cpcivm_add_step3_label_disk"></span>
+                                                    <span class="ml-auto"
+                                                          data-ng-bind="(flavor.disk | bytes:2:false:'GB') + ' ' + (flavor.diskType | uppercase)"></span>
+                                                </span>
+                                                <span class="d-flex flex-wrap">
+                                                    <span data-translate="cpcivm_add_step3_label_bandwidth"></span>
+                                                    <span class="ml-auto"
+                                                          data-ng-bind="flavor.outboundBandwidth ? flavor.outboundBandwidth + ' Mbps' : '?'"></span>
+                                                </span>
                                             </span>
-                                            <span class="d-flex flex-wrap">
-                                                <span data-translate="cpcivm_add_step3_label_core"></span>
-                                                <span class="ml-auto"
-                                                      data-translate="cpcivm_add_step3_value_core"
-                                                      data-translate-values="{ vcores: flavor.vcpus, frequency: flavor.frequency }"></span>
+                                            <span class="oui-radio__section text-right"
+                                                  data-ng-if="flavor.price">
+                                                <strong class="d-block"
+                                                        data-translate="cpci_vm_flavor_month"
+                                                        data-translate-values="{ price: (flavor.price.monthlyPrice.value | currency: $ctrl.currentCurrency: 2) || '?' }"></strong>
+                                                <span class="d-block"
+                                                      data-translate="cpci_vm_flavor_price"
+                                                      data-translate-values="{ price: (flavor.price.price.value | currency: $ctrl.currentCurrency: 3) || '?' }"></span>
                                             </span>
-                                            <span class="d-flex flex-wrap">
-                                                <span data-translate="cpcivm_add_step3_label_disk"></span>
-                                                <span class="ml-auto"
-                                                      data-ng-bind="(flavor.disk | bytes:2:false:'GB') + ' ' + (flavor.diskType | uppercase)"></span>
+                                            <span class="oui-radio__section text-center"
+                                                  data-ng-if="flavor.disabled">
+                                                <oui-button data-variant="link"
+                                                            data-text="{{'cpcivm_add_step3_disabled_NOT_AVAILABLE' | translate}}"
+                                                            data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('NOT_AVAILABLE', { regions: flavor.regions.join(', ') })"
+                                                            data-ng-if="flavor.disabled === 'NOT_AVAILABLE'">
+                                                </oui-button>
+                                                <oui-button data-variant="link"
+                                                            data-text="{{'cpcivm_add_step3_disabled_QUOTA_RAM' | translate}}"
+                                                            data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_RAM', { quota: $ctrl.CloudFlavorService.getQuotaRam(flavor, $ctrl.quota) })"
+                                                            data-ng-if="flavor.disabled === 'QUOTA_RAM'">
+                                                </oui-button>
+                                                <oui-button data-variant="link"
+                                                            data-text="{{'cpcivm_add_step3_disabled_QUOTA_VCPUS' | translate}}"
+                                                            data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_VCPUS', { quota: $ctrl.CloudFlavorService.getQuotaCore(flavor, $ctrl.quota) })"
+                                                            data-ng-if="flavor.disabled === 'QUOTA_VCPUS'">
+                                                </oui-button>
+                                                <oui-button data-variant="link"
+                                                            data-text="{{'cpcivm_add_step3_disabled_QUOTA_MINDISK' | translate}}"
+                                                            data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_MINDISK', $ctrl.CloudFlavorService.getRequirements(flavor, $ctrl.model.imageId))"
+                                                            data-ng-if="flavor.disabled === 'QUOTA_MINDISK'">
+                                                </oui-button>
+                                                <oui-button data-variant="link"
+                                                            data-text="{{'cpcivm_add_step3_disabled_QUOTA_MINRAM' | translate}}"
+                                                            data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_MINRAM', $ctrl.CloudFlavorService.getRequirements(flavor, $ctrl.model.imageId))"
+                                                            data-ng-if="flavor.disabled === 'QUOTA_MINRAM'">
+                                                </oui-button>
                                             </span>
-                                            <span class="d-flex flex-wrap">
-                                                <span data-translate="cpcivm_add_step3_label_bandwidth"></span>
-                                                <span class="ml-auto"
-                                                      data-ng-bind="flavor.outboundBandwidth ? flavor.outboundBandwidth + ' Mbps' : '?'"></span>
-                                            </span>
-                                        </span>
-                                        <span class="oui-radio__section text-right"
-                                              data-ng-if="flavor.price">
-                                            <strong class="d-block"
-                                                    data-translate="cpci_vm_flavor_month"
-                                                    data-translate-values="{ price: (flavor.price.monthlyPrice.value | currency: $ctrl.currentCurrency: 2) || '?' }"></strong>
-                                            <span class="d-block"
-                                                  data-translate="cpci_vm_flavor_price"
-                                                  data-translate-values="{ price: (flavor.price.price.value | currency: $ctrl.currentCurrency: 3) || '?' }"></span>
-                                        </span>
-                                        <span class="oui-radio__section text-center"
-                                              data-ng-if="flavor.disabled">
-                                            <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_NOT_AVAILABLE' | translate}}"
-                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('NOT_AVAILABLE', { regions: flavor.regions.join(', ') })"
-                                                        data-ng-if="flavor.disabled === 'NOT_AVAILABLE'">
-                                            </oui-button>
-                                            <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_RAM' | translate}}"
-                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_RAM', { quota: $ctrl.CloudFlavorService.getQuotaRam(flavor, $ctrl.quota) })"
-                                                        data-ng-if="flavor.disabled === 'QUOTA_RAM'">
-                                            </oui-button>
-                                            <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_VCPUS' | translate}}"
-                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_VCPUS', { quota: $ctrl.CloudFlavorService.getQuotaCore(flavor, $ctrl.quota) })"
-                                                        data-ng-if="flavor.disabled === 'QUOTA_VCPUS'">
-                                            </oui-button>
-                                            <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_MINDISK' | translate}}"
-                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_MINDISK', $ctrl.CloudFlavorService.getRequirements(flavor, $ctrl.model.imageId))"
-                                                        data-ng-if="flavor.disabled === 'QUOTA_MINDISK'">
-                                            </oui-button>
-                                            <oui-button data-variant="link"
-                                                        data-text="{{'cpcivm_add_step3_disabled_QUOTA_MINRAM' | translate}}"
-                                                        data-on-click="$ctrl.VirtualMachineAddService.openQuotaModal('QUOTA_MINRAM', $ctrl.CloudFlavorService.getRequirements(flavor, $ctrl.model.imageId))"
-                                                        data-ng-if="flavor.disabled === 'QUOTA_MINRAM'">
-                                            </oui-button>
-                                        </span>
-                                    </label>
+                                        </oui-radio>
+                                    </div>
                                 </div>
-                            </div>
+                            </oui-radio-group>
                         </uib-tab>
                     </uib-tabset>
 
@@ -489,26 +491,27 @@
                                  data-step-completed="$ctrl.isStep4Valid()">
                     <div data-ng-if="!$ctrl.model.billingPeriod">
                         <p data-translate="cpcivm_add_step4_message"></p>
-                        <div class="cloud-vm-add-list d-md-flex flex-wrap">
-                            <div class="oui-radio oui-radio_thumbnail cloud-vm-add-list-item p-2"
-                                 data-ng-repeat="period in $ctrl.enums.billingPeriods track by $index">
-                                <input class="oui-radio__input" type="radio" name="billingPeriod" id="period_{{period}}"
-                                       data-ng-model="$ctrl.model.billingPeriod"
-                                       data-ng-value="period">
-                                <label class="oui-radio__label-container" for="period_{{period}}">
-                                    <span class="oui-radio__label"
-                                          data-ng-bind=":: 'cpcivm_add_step4_billing_period_' + period | translate"></span>
-                                    <span class="oui-radio__section"
-                                          data-translate="cpci_vm_flavor_price"
-                                          data-translate-values="{ price: (($ctrl.model.number * $ctrl.model.flavor.price.price.value) | currency: $ctrl.currentCurrency: 3) || '?' }"
-                                          data-ng-if="period === 'hourly'"></span>
-                                    <span class="oui-radio__section"
-                                          data-translate="cpci_vm_flavor_month"
-                                          data-translate-values="{ price: (($ctrl.model.number * $ctrl.model.flavor.price.monthlyPrice.value) | currency: $ctrl.currentCurrency: 2) || '?' }"
-                                          data-ng-if="period === 'monthly'"></span>
-                                </label>
+                        <oui-radio-group data-model="$ctrl.model.billingPeriod"
+                                         data-name="billingPeriod">
+                            <div class="cloud-vm-add-list d-md-flex flex-wrap">
+                                <div class="cloud-vm-add-list-item p-2"
+                                     data-ng-repeat="period in $ctrl.enums.billingPeriods track by $index">
+                                    <oui-radio data-text="{{:: 'cpcivm_add_step4_billing_period_' + period | translate}}"
+                                               data-id="period_{{period}}"
+                                               data-thumbnail="true"
+                                               data-value="period">
+                                        <span class="oui-radio__section"
+                                              data-translate="cpci_vm_flavor_price"
+                                              data-translate-values="{ price: (($ctrl.model.number * $ctrl.model.flavor.price.price.value) | currency: $ctrl.currentCurrency: 3) || '?' }"
+                                              data-ng-if="period === 'hourly'"></span>
+                                        <span class="oui-radio__section"
+                                              data-translate="cpci_vm_flavor_month"
+                                              data-translate-values="{ price: (($ctrl.model.number * $ctrl.model.flavor.price.monthlyPrice.value) | currency: $ctrl.currentCurrency: 2) || '?' }"
+                                              data-ng-if="period === 'monthly'"></span>
+                                    </oui-radio>
+                                </div>
                             </div>
-                        </div>
+                        </oui-radio-group>
                     </div>
 
                     <div class="oui-field"
