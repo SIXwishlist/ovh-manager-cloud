@@ -289,6 +289,12 @@ class CloudProjectComputeInfrastructureVirtualMachineAddCtrl {
                     filteredFlavors = _.filter(filteredFlavors, flavor => _.indexOf(restrictedFlavors, flavor.shortType) > -1);
                 }
 
+                // Remove incompatible flavors with selected image
+                filteredFlavors = _.filter(filteredFlavors, flavor => {
+                    const restrictedImages = _.get(flavor, "imageType", false);
+                    return restrictedImages === false || _.some(restrictedImages, name => (new RegExp(name, "gi")).test(this.model.imageType.name));
+                });
+
                 this.groupedFlavors = this.VirtualMachineAddService.groupFlavorsByCategory(filteredFlavors, this.enums.flavorsTypes);
             })
             .catch(this.ServiceHelper.errorHandler("cpcivm_add_step3_flavors_ERROR"))

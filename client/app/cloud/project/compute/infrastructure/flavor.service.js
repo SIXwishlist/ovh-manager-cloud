@@ -149,6 +149,9 @@
                 augmentedFlavor.diskType = /ssd/.test(flavor.type) ? "ssd" : "ceph";
 
                 if (_.indexOf(["g1", "g2", "g3"], augmentedFlavor.shortType) > -1) {
+                    if (flavor.osType === "windows") {
+                        augmentedFlavor.imageType = ["uefi"];
+                    }
                     if (numberType === "120") {
                         augmentedFlavor.gpuCardCount = 3;
                     } else {
