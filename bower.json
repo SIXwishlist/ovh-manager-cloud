@@ -69,9 +69,9 @@
     "ovh-angular-sso-auth-modal-plugin": "^1.0.15",
     "ovh-angular-swimming-poll": "^3.0.1",
     "ovh-angular-doc-url": "^0.0.6",
-    "ovh-angular-module-status": "^3.0.0",
-    "ovh-angular-otrs": "^5.0.0",
-    "ovh-api-services": "^2.1.13",
+    "ovh-angular-module-status": "#bugfix/rename-services",
+    "ovh-angular-otrs": "#bugfix/missing-intervention",
+    "ovh-api-services": "#bugfix/rename-services",
     "angular-chart.js": "^1.1.1",
     "ovh-angular-list-view": "^0.1.5",
     "jsurl": "https://github.com/Sage/jsurl.git#v0.1.5",
@@ -97,7 +97,8 @@
     "ovh-common-style": "^3.2.2",
     "lodash": "~3.10.1",
     "ovh-angular-actions-menu": "^2.0.0",
-    "ng-at-internet": "^3.0.0"
+    "ng-at-internet": "^3.0.0",
+    "ovh-api-services": "bugfix/rename-services"
   },
   "overrides": {
     "angular-strap": {
